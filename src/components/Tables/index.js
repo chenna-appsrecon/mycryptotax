@@ -10,6 +10,7 @@ import {
   TableCaption,
   TableContainer,
 } from "@chakra-ui/react";
+import { headerKeys } from "../../constants";
 
 const TableComponent = ({ tableData }) => {
   const [data, setData] = useState(tableData);
@@ -21,29 +22,31 @@ const TableComponent = ({ tableData }) => {
 
   if (data && data.length) {
     keys = Object.keys(data[0]);
-    console.log("keys", keys);
   }
   return (
     <TableContainer>
       <Table variant="simple">
-        <TableCaption>Imperial to metric conversion factors</TableCaption>
+        {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
         <Thead>
           <Tr>
             {keys &&
               keys.length > 0 &&
-              keys.map((key) => {
-                return <Th>{key}</Th>;
+              keys.map((key, i) => {
+                return <Th key={i}>{key}</Th>;
               })}
           </Tr>
         </Thead>
         <Tbody>
           {data &&
             data.length > 0 &&
-            data.map((rowData) => {
+            data.map((rowData, i) => {
               return (
-                <Tr>
-                  {keys.map((key) => {
-                    return <Td>{rowData[key]}</Td>;
+                <Tr key={i}>
+                  {keys.map((key, i) => {
+                    if (key == "at") {
+                      return <Td>{new Date(rowData[key]).toDateString()}</Td>;
+                    }
+                    return <Td key={i}>{rowData[key].toUpperCase()}</Td>;
                   })}
                 </Tr>
               );
@@ -53,8 +56,8 @@ const TableComponent = ({ tableData }) => {
           <Tr>
             {keys &&
               keys.length > 0 &&
-              keys.map((key) => {
-                return <Th>{key}</Th>;
+              keys.map((key, i) => {
+                return <Th key={i}>{key}</Th>;
               })}
           </Tr>
         </Tfoot>

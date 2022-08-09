@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Button,
   Flex,
@@ -13,35 +14,38 @@ import {
   AvatarBadge,
   IconButton,
   Center,
+  Box,
+  Text,
 } from "@chakra-ui/react";
 import { SmallCloseIcon } from "@chakra-ui/icons";
 import { APP_URL } from "./constants";
+import { headers } from "./api";
+import SidebarWithHeader from "./components/SideNavBar";
 
 export default function UserProfileEdit() {
+  const [data, setData] = useState("");
   useEffect(() => {
     handleProfile();
-  });
+    console.log("============");
+    // handleProfileAxios();
+  }, []);
 
   const handleProfile = () => {
     // setMessage("");
     // setIsLoading(true);
     fetch(APP_URL + "profile", {
       method: "GET",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Credentials": true,
-        credentials: "include",
-      },
+      headers: headers,
     })
       .then((res) => res.json())
       .then((response) => {
         console.log("response = ", response);
-        if (response.token) {
-          localStorage.setItem("token", response.token);
-          //   setIsLoading(false);
-          //   navigate("/dashboard");
-        }
+        setData(response);
+        // if (response.token) {
+        //   localStorage.setItem("token", response.token);
+        //   //   setIsLoading(false);
+        //   //   navigate("/dashboard");
+        // }
         return response;
       })
       .catch((e) => console.log(e));
@@ -51,94 +55,49 @@ export default function UserProfileEdit() {
     // }
   };
 
+  const handleProfileAxios = () => {
+    axios({
+      // Endpoint to send files
+      url: APP_URL + "profile",
+      method: "GET",
+      headers: headers,
+    })
+      // Handle the response from backend here
+      .then((res) => {
+        console.log("handleProfileAxios res", res.data);
+      })
+      .catch((err) => {});
+  };
+
   return (
-    <Flex
-      minH={"100vh"}
-      align={"center"}
-      justify={"center"}
-      bg={useColorModeValue("gray.50", "gray.800")}
-    >
-      <Stack
-        spacing={4}
-        w={"full"}
-        maxW={"md"}
-        bg={useColorModeValue("white", "gray.700")}
-        rounded={"xl"}
-        boxShadow={"lg"}
-        p={6}
-        my={12}
+    <SidebarWithHeader>
+      <Flex
+      // minH={"100vh"}
+      // align={"center"}
+      // justify={"center"}
+      // bg={useColorModeValue("gray.50", "gray.800")}
       >
-        <Heading lineHeight={1.1} fontSize={{ base: "2xl", sm: "3xl" }}>
-          User Profile Edit
-        </Heading>
-        <FormControl id="userName">
-          <FormLabel>User Icon</FormLabel>
-          <Stack direction={["column", "row"]} spacing={6}>
-            <Center>
-              <Avatar size="xl" src="https://bit.ly/sage-adebayo">
-                <AvatarBadge
-                  as={IconButton}
-                  size="sm"
-                  rounded="full"
-                  top="-10px"
-                  colorScheme="red"
-                  aria-label="remove Image"
-                  icon={<SmallCloseIcon />}
-                />
-              </Avatar>
-            </Center>
-            <Center w="full">
-              <Button w="full">Change Icon</Button>
-            </Center>
-          </Stack>
-        </FormControl>
-        <FormControl id="userName" isRequired>
-          <FormLabel>User name</FormLabel>
-          <Input
-            placeholder="UserName"
-            _placeholder={{ color: "gray.500" }}
-            type="text"
-          />
-        </FormControl>
-        <FormControl id="email" isRequired>
-          <FormLabel>Email address</FormLabel>
-          <Input
-            placeholder="your-email@example.com"
-            _placeholder={{ color: "gray.500" }}
-            type="email"
-          />
-        </FormControl>
-        <FormControl id="password" isRequired>
-          <FormLabel>Password</FormLabel>
-          <Input
-            placeholder="password"
-            _placeholder={{ color: "gray.500" }}
-            type="password"
-          />
-        </FormControl>
-        <Stack spacing={6} direction={["column", "row"]}>
-          <Button
-            bg={"red.400"}
-            color={"white"}
-            w="full"
-            _hover={{
-              bg: "red.500",
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            bg={"blue.400"}
-            color={"white"}
-            w="full"
-            _hover={{
-              bg: "blue.500",
-            }}
-          >
-            Submit
-          </Button>
+        <Stack
+          spacing={4}
+          w={"full"}
+          maxW={"md"}
+          bg={useColorModeValue("white", "gray.700")}
+          rounded={"xl"}
+          boxShadow={"lg"}
+          p={6}
+          my={12}
+        >
+          <Heading lineHeight={1.1} fontSize={{ base: "2xl", sm: "3xl" }}>
+            Profile Details
+          </Heading>
+          {data && (
+            <Box>
+              <Text>{data.name}</Text>
+              <Text>{data.email}</Text>
+            </Box>
+          )}
         </Stack>
-      </Stack>
-    </Flex>
+      </Flex>
+    </SidebarWithHeader>
   );
 }

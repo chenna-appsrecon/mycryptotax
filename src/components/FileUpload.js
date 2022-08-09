@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Thead,
@@ -19,18 +20,48 @@ import {
   Text,
   useColorModeValue as mode,
   VStack,
+  Flex,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Progress,
+  Stack,
+  Select,
 } from "@chakra-ui/react";
+import { FiMonitor, FiMoon, FiSun } from "react-icons/fi";
 import { FiUploadCloud } from "react-icons/fi";
+import axios from "axios";
+import { APP_URL, headerKeys } from "../constants";
+import { headers } from "../api";
+import { CustomSelect } from "./CustomSelect";
+import { Option } from "./Option";
 // import { FiUploadCloud } from "react-icons/fi";
 
 function FileUpload() {
-  const [file, setFile] = useState();
+  const [files, setFile] = useState("");
   const [array, setArray] = useState([]);
-
+  const [isLoading, setLoading] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [dataUploaded, setDataUploaded] = useState(false);
+  const [colorMode, setColorMode] = useState("");
+  const navigate = useNavigate();
   const fileReader = new FileReader();
-
+  // useEffect(() => {
+  //   onOpen();
+  // }, []);
   const handleOnChange = (e) => {
-    setFile(e.target.files[0]);
+    setFile(e.target.files);
   };
 
   const csvFileToArray = (string) => {
@@ -45,23 +76,56 @@ function FileUpload() {
       }, {});
       return obj;
     });
-
+    console.log("array", array);
     setArray(array);
   };
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+    axios
+      .post(APP_URL + "upload", files, { headers: headers })
+      .then((response) => {
+        // console.log("response", response);
+        setDataUploaded(true);
+        handleTransactions();
+      })
+      .catch((err) => console.log("err: ", err));
+  };
 
-    if (file) {
+  const handleTransactions = () => {
+    fetch(APP_URL + "transaction", {
+      method: "GET",
+      headers: headers,
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        setLoading(false);
+        onOpen();
+        setTimeout(() => {
+          navigate("/transactions");
+        }, 3000);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handlePreview = (e) => {
+    e.preventDefault();
+    if (files && files[0]) {
       fileReader.onload = function (event) {
         const text = event.target.result;
+        console.log("text", text);
         csvFileToArray(text);
       };
-      fileReader.readAsText(file);
+      fileReader.readAsText(files[0]);
     }
   };
 
-  const headerKeys = Object.keys(Object.assign({}, ...array));
+  const onCloseModal = () => {
+    onClose();
+    navigate("/transactions");
+  };
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -70,15 +134,46 @@ function FileUpload() {
           borderWidth="1px"
           borderRadius="lg"
           px="6"
-          s
           py="4"
           bg={mode("white", "gray.800")}
         >
           <VStack spacing="3">
+            {/* <FormControl id="colormode">
+              <FormLabel>ColorMode</FormLabel>
+              <CustomSelect
+                name="ColorMode"
+                colorScheme="blue"
+                value={colorMode}
+                onChange={setColorMode}
+                placeholder="Select a color mode"
+              >
+                <Option value="light">
+                  <HStack>
+                    <Icon as={FiSun} />
+                    <Text>Light</Text>
+                  </HStack>
+                </Option>
+                <Option value="dark">
+                  <HStack>
+                    <Icon as={FiMoon} />
+                    <Text>Dark</Text>
+                  </HStack>
+                </Option>
+                <Option value="system">
+                  <HStack>
+                    <Icon as={FiMonitor} />
+                    <Text>System</Text>
+                  </HStack>
+                </Option>
+              </CustomSelect>
+            </FormControl> */}
+            <Select placeholder="Wazirx">
+              <option value="option1">Wazirx</option>
+            </Select>
             <Square size="10" bg="bg-subtle" borderRadius="lg">
               <Icon as={FiUploadCloud} boxSize="5" color="muted" />
             </Square>
-            <label class="custom-file-upload">
+            <label className="custom-file-upload">
               <center style={{ textAlignLast: "center" }}>
                 <input
                   accept="text/csv"
@@ -108,55 +203,133 @@ function FileUpload() {
             </VStack>
           </VStack>
         </Center>
-
-        <Button
-          mt={4}
-          //   disabled={!(array && array.length > 0)}
-          onClick={(e) => {
-            handleOnSubmit(e);
-          }}
+        <Flex
+          w="100%"
+          maxW="1044px"
+          mx="auto"
+          justifyContent="space-around"
+          pt={{ sm: "100px", md: "0px" }}
         >
-          Preview
-        </Button>
+          <Button
+            mt={4}
+            //   disabled={!(array && array.length > 0)}
+            onClick={(e) => {
+              handlePreview(e);
+            }}
+            disabled={!files}
+          >
+            Preview
+          </Button>
+          <Button
+            mt={4}
+            //   disabled={!(array && array.length > 0)}
+            onClick={(e) => {
+              handleOnSubmit(e);
+            }}
+            disabled={!files}
+          >
+            Upload
+          </Button>
+        </Flex>
       </Container>
       <br />
-      <Box bg={"white"} flex="1" p="6">
-        <Box
-          w="full"
-          h="full"
-          rounded="lg"
-          //   border="3px dashed currentColor"
-          color={mode("gray.200", "gray.700")}
-        >
-          <TableContainer>
-            <Table variant="simple">
-              {/* <TableCaption>Preview Data Here</TableCaption> */}
-              <Thead>
-                <Tr>
-                  {headerKeys &&
-                    headerKeys.length > 0 &&
-                    headerKeys.map((key) => {
-                      return <Th>{key}</Th>;
-                    })}
-                </Tr>
-              </Thead>
-              <Tbody>
-                {array &&
-                  array.length > 0 &&
-                  array.map((rowData, i) => {
-                    return (
-                      <Tr key={i}>
-                        {Object.values(rowData).map((val, i) => (
-                          <Td>{val}</Td>
-                        ))}
-                        {/* {keys.map((key) => {
+      {isLoading && !dataUploaded && (
+        <Center bg="lightblue" h="100px" color="white">
+          Uploading document
+        </Center>
+      )}
+      {dataUploaded && (
+        <Alert status="success" variant="subtle" mb={5}>
+          <AlertIcon />
+          Data uploaded to the server. Fire on!
+        </Alert>
+      )}
+      {dataUploaded && (
+        <Center bg="lightblue" h="100px" color="white">
+          Processing transactions, Please wait!
+        </Center>
+      )}
+      {isLoading && (
+        <>
+          <Progress size="xs" isIndeterminate />
+        </>
+      )}
+
+      <Modal
+        isCentered
+        onClose={onCloseModal}
+        isOpen={isOpen}
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          {/* <ModalHeader>Modal Title</ModalHeader>
+          <ModalCloseButton /> */}
+          <ModalBody p={3}>
+            <Alert
+              status="success"
+              variant="subtle"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              height="200px"
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                Document uploaded successfully!
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">
+                Thanks for submitting your transactions, You will see your tax
+                details under transactions tab.
+              </AlertDescription>
+            </Alert>
+          </ModalBody>
+          {/* <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter> */}
+        </ModalContent>
+      </Modal>
+      {array && array.length > 0 && (
+        <Box bg={"white"} flex="1" p="6">
+          <Box
+            w="full"
+            h="full"
+            rounded="lg"
+            // border="3px dashed currentColor"
+            // color={mode("gray.200", "gray.700")}
+          >
+            <TableContainer>
+              <Table variant="simple">
+                {/* <TableCaption>Preview Data Here</TableCaption> */}
+                <Thead>
+                  <Tr>
+                    {array &&
+                      array.length > 0 &&
+                      Object.keys(array[0]).map((key, i) => {
+                        return <Th key={i}>{key}</Th>;
+                      })}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {array &&
+                    array.length > 0 &&
+                    array.map((rowData, i) => {
+                      return (
+                        <Tr key={i}>
+                          {Object.values(rowData).map((val, i) => (
+                            <Td key={i}>{val}</Td>
+                          ))}
+                          {/* {keys.map((key) => {
                       return <Td>{rowData[key]}</Td>;
                     })} */}
-                      </Tr>
-                    );
-                  })}
-              </Tbody>
-              {/* <Tfoot>
+                        </Tr>
+                      );
+                    })}
+                </Tbody>
+                {/* <Tfoot>
             <Tr>
               {headerKeys &&
                 headerKeys.length > 0 &&
@@ -165,10 +338,11 @@ function FileUpload() {
                 })}
             </Tr>
           </Tfoot> */}
-            </Table>
-          </TableContainer>
+              </Table>
+            </TableContainer>
+          </Box>
         </Box>
-      </Box>
+      )}
       {/* <table>
         <thead>
           <tr key={"header"}>

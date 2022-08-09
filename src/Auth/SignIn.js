@@ -49,6 +49,7 @@ function SignIn() {
       .then((res) => res.json())
       .then((response) => {
         console.log("response = ", response);
+
         if (response.token) {
           localStorage.setItem("token", response.token);
           setIsLoading(false);

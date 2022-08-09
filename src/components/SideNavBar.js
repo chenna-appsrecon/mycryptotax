@@ -1,4 +1,5 @@
 import React, { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   IconButton,
   Avatar,
@@ -35,11 +36,12 @@ import {
 import { IconType } from "react-icons";
 import { ReactText } from "react";
 import TableComponent from "./Tables";
+import { APP_URL } from "../constants";
 
 const LinkItems = [
   { name: "Dashboard", icon: FiHome, path: "/dashboard" },
   { name: "Transactions", icon: FiTrendingUp, path: "/transactions" },
-  { name: "Reports", icon: FiCompass, path: "/dashboard" },
+  { name: "Add Sources", icon: FiCompass, path: "/fileUpload" },
   { name: "Wallets", icon: FiStar, path: "/dashboard" },
   { name: "Documents", icon: FiSettings, path: "/dashboard" },
 ];
@@ -138,6 +140,13 @@ const NavItem = ({ path, icon, children, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/signin");
+  };
+
   return (
     <Flex
       ml={{ base: 0, md: 60 }}
@@ -218,13 +227,13 @@ const MobileNav = ({ onOpen, ...rest }) => {
               {/* <MenuItem>Settings</MenuItem> */}
               <MenuItem>Account Details</MenuItem>
               <MenuDivider />
-              <Link
+              {/* <Link
                 href={"/signin"}
                 style={{ textDecoration: "none" }}
                 _focus={{ boxShadow: "none" }}
-              >
-                <MenuItem>Sign out</MenuItem>
-              </Link>
+              > */}
+              <MenuItem onClick={() => handleLogout()}>Sign out</MenuItem>
+              {/* </Link>s */}
             </MenuList>
           </Menu>
         </Flex>

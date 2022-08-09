@@ -19,6 +19,7 @@ import LoginPage from "./Auth/SignIn";
 import Dashboard from "./components/Dashboard";
 import UserProfileEdit from "./profile";
 import { Transactions } from "./components/Transactions";
+import { SourceUpload } from "./components/SourceUpload";
 
 const SidebarWithHeader = lazy(() => import("./components/SideNavBar"));
 // const LoginPage = lazy(() => import("./Auth/SignIn"));
@@ -75,6 +76,8 @@ const App = () => {
           <Route path="/signup" element={<Register />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/fileUpload" element={<SourceUpload />} />
+
           <Route path="/profile" element={<UserProfileEdit />} />
           {/* <Route path="/" element={<SidebarWithHeader />} /> */}
           {/* <Route path="*" element={<Navigate to="/" />} /> */}

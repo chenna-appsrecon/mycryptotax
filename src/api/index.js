@@ -1,6 +1,12 @@
 import axios from "axios";
 
 const API_ENDPOINT = "https://stockpalapi.glassball.app";
+let token = localStorage.getItem("token");
+console.log("token", token);
+export const headers = {
+  "Content-Type": "application/json",
+  "x-access-token": token,
+};
 
 export const fetchPosts = async () => {
   return await axios.get(API_ENDPOINT);

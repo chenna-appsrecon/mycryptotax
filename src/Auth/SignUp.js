@@ -30,6 +30,7 @@ function SignUp() {
   const bgColor = useColorModeValue("white", "gray.700");
   const bgIcons = useColorModeValue("teal.200", "rgba(255, 255, 255, 0.5)");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
   const [input, setInput] = useState("");
   const [email, setEmail] = useState("");
   const [firstname, setFirstName] = useState("");
@@ -63,13 +64,10 @@ function SignUp() {
       .then((res) => res.json())
       .then((response) => {
         console.log("response = ", response);
-        setIsLoading(false);
         if (response.token) {
           localStorage.setItem("token", response.token);
-          setIsLoading(false);
-          // navigate("/dashboard");
+          handleMiddleWareLogin(response.token);
         }
-        return response;
       })
       .catch((e) => console.log(e));
     // if (token) {
@@ -77,9 +75,26 @@ function SignUp() {
     //   // setLoading(false);
     // }
   };
+
   const handleSubmit = () => {
     console.log("E", email, password);
     handleRegistration();
+  };
+  const handleMiddleWareLogin = (token) => {
+    fetch(APP_URL + "middlewarelogin", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        setIsLoading(false);
+        navigate("/dashboard");
+      })
+      .catch((err) => console.log(err));
   };
 
   return (
@@ -124,7 +139,7 @@ function SignUp() {
           mb="26px"
           w={{ base: "90%", sm: "60%", lg: "40%", xl: "30%" }}
         >
-          Get to know your crypto taxes here
+          Get to know your crypto taxes
         </Text>
       </Flex>
       <Flex alignItems="center" justifyContent="center" mb="60px" mt="20px">
@@ -293,7 +308,7 @@ function SignUp() {
               <FormLabel>ReEnter Password</FormLabel>
               <InputGroup>
                 <Input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword2 ? "text" : "password"}
                   fontSize="sm"
                   ms="4px"
                   name="password2"
@@ -307,10 +322,10 @@ function SignUp() {
                   <Button
                     variant={"ghost"}
                     onClick={() =>
-                      setShowPassword((showPassword) => !showPassword)
+                      setShowPassword2((showPassword2) => !showPassword2)
                     }
                   >
-                    {showPassword ? <ViewIcon /> : <ViewOffIcon />}
+                    {showPassword2 ? <ViewIcon /> : <ViewOffIcon />}
                   </Button>
                 </InputRightElement>
               </InputGroup>
