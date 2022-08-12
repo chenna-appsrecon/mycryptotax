@@ -20,6 +20,7 @@ import {
   useColorModeValue as mode,
   VStack,
   Flex,
+  Link,
 } from "@chakra-ui/react";
 import axios from "axios";
 import FileUpload from "./FileUpload";
@@ -46,7 +47,7 @@ export const Transactions = () => {
       .get(APP_URL + "getprofitlossposition", { headers: headers })
       .then((response) => {
         // setArray(response.data);
-        console.log("getprofitlossposition: ", response);
+        // console.log("getprofitlossposition: ", response);
       })
       .catch((err) => console.log("err: ", err));
   };
@@ -82,6 +83,7 @@ export const Transactions = () => {
     // console.log("csvString", csvString);
     downloadCSV(csvString);
   };
+
   useEffect(() => {
     fetchTransactions();
     fetchPLTransactions();
@@ -94,7 +96,7 @@ export const Transactions = () => {
           mb={6}
           colorScheme="blue"
           mt={4}
-          //   disabled={!(array && array.length > 0)}
+          disabled={!(array && array.length > 0)}
           onClick={(e) => {
             exportCSVFromTable(headerKeys, array);
           }}
@@ -110,6 +112,23 @@ export const Transactions = () => {
           // border="3px dashed currentColor"
           // color={mode("gray.200", "gray.700")}
         >
+          {array.length == 0 && (
+            <Center>
+              <Flex
+                direction={"column"}
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Text>No Transactions Found! </Text>
+                <Text>
+                  Please Upload transactions from
+                  <Link ms="5px" fontWeight="bold" href={"/fileUpload"}>
+                    Add Sources tab
+                  </Link>
+                </Text>
+              </Flex>
+            </Center>
+          )}
           <TableContainer>
             <Table variant="simple">
               {/* <TableCaption>Preview Data Here</TableCaption> */}

@@ -6,6 +6,9 @@ import axios from "axios";
 import { headers } from "../../api";
 import { APP_URL } from "../../constants";
 import { BarChart } from "./BarChart";
+import { Card } from "../Card";
+import { PageHeader } from "../PageHeader";
+import { CryptoData } from "../../CryptoData";
 const API_URL = "https://stockpalapi.glassball.app";
 
 const Dashboard = () => {
@@ -13,6 +16,9 @@ const Dashboard = () => {
   const [tableData, setTableData] = useState([]);
   const [cryptoData, setCryptoData] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [holdings, setHoldings] = useState({});
+  const [totalAssets, setTotalAssets] = useState(0);
+  const [transactionData, setTransactionData] = useState();
   let token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -20,9 +26,19 @@ const Dashboard = () => {
 
     if (!cryptoData.length) {
       GetCryptoData();
+      fetchTransactions();
     }
   }, []);
-
+  const fetchTransactions = () => {
+    axios
+      .get(APP_URL + "gettransaction", { headers: headers })
+      .then((response) => {
+        setTransactionData(response.data);
+        getCryptoDetails(response.data);
+        // console.log("response", response);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
   const GetCryptoData = () => {
     axios
       .get("https://api.wazirx.com/sapi/v1/tickers/24hr")
@@ -38,10 +54,55 @@ const Dashboard = () => {
       })
       .catch((e) => console.log(e));
   };
+  let details = {};
 
-  // console.log("cryptoData", cryptoData);
+  const getCryptoDetails = (data) => {
+    console.log(data);
+    let holdingsObj = {};
+    let assetValue = 0;
+    data.map((item) => {
+      if (holdingsObj[item.securityName]) {
+        if (item.feePaidIn !== "INR") {
+          if (holdingsObj[item.feePaidIn]) {
+            holdingsObj[item.feePaidIn] =
+              holdingsObj[item.feePaidIn] - parseFloat(item.netAmount);
+          } else {
+            holdingsObj[item.feePaidIn] = -parseFloat(item.netAmount);
+          }
+        }
+        assetValue = parseFloat(assetValue) + parseFloat(item.quantity);
+        holdingsObj[item.securityName] += parseFloat(item.quantity);
+      } else {
+        if (item.feePaidIn !== "INR") {
+          if (holdingsObj[item.feePaidIn]) {
+            holdingsObj[item.feePaidIn] =
+              holdingsObj[item.feePaidIn] - parseFloat(item.netAmount);
+          } else {
+            holdingsObj[item.feePaidIn] = -parseFloat(item.netAmount);
+          }
+        }
+        assetValue = parseFloat(assetValue) + parseFloat(item.quantity);
+        holdingsObj[item.securityName] = parseFloat(item.quantity);
+      }
+    });
+    setTotalAssets(assetValue);
+    data.map((item) => {
+      if (details[item.securityName]) {
+        details[item.securityName] += parseFloat(item.quantity);
+      } else {
+        details[item.securityName] = parseFloat(item.quantity);
+      }
+    });
+    setHoldings(holdingsObj);
+    console.log("details", details);
+    console.log("holdingsObj", holdingsObj);
+  };
+
+  // console.log("transactionData", transactionData);
   return (
     <SidebarWithHeader>
+      <PageHeader totalAssets={totalAssets} />
+      <Card holdings={holdings && holdings} />
       {/* <BarChart chartData={chartData} /> */}
       {isLoaded ? (
         <Box w="100%" bg="white">

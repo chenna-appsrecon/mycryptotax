@@ -56,6 +56,7 @@ function FileUpload() {
   const [dataUploaded, setDataUploaded] = useState(false);
   const [colorMode, setColorMode] = useState("");
   const navigate = useNavigate();
+  const titleColor = mode("teal.300", "teal.200");
   const fileReader = new FileReader();
   // useEffect(() => {
   //   onOpen();
@@ -241,7 +242,7 @@ function FileUpload() {
       {dataUploaded && (
         <Alert status="success" variant="subtle" mb={5}>
           <AlertIcon />
-          Data uploaded to the server. Fire on!
+          Data uploaded successfully!
         </Alert>
       )}
       {dataUploaded && (

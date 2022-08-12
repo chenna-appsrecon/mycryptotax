@@ -66,7 +66,7 @@ export default function UserProfileEdit() {
       .then((res) => {
         console.log("handleProfileAxios res", res.data);
       })
-      .catch((err) => {});
+      .catch((err) => console.log(err));
   };
 
   return (

@@ -92,7 +92,7 @@ function SignUp() {
       .then((res) => {
         console.log(res);
         setIsLoading(false);
-        navigate("/dashboard");
+        navigate("/fileUpload");
       })
       .catch((err) => console.log(err));
   };
