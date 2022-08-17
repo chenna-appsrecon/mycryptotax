@@ -36,7 +36,7 @@ export const PageHeader = ({ totalAssets }) => (
           Total Portfolio Value: {totalAssets} Coins
         </Text>
         <Text color="muted" fontSize="sm">
-          All registered users in the overview
+          Overview of all your assets
         </Text>
       </Stack>
     </Box>

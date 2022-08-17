@@ -19,14 +19,18 @@ import {
 } from "react-icons/fi";
 
 export const Stat = (props) => {
-  const { label, value, delta, quantity, coin, id, ...boxProps } = props;
+  const { label, value, delta, quantity, coin, id, grossAmount, ...boxProps } =
+    props;
+  let ADA = 44.05;
   return (
     <Box
       bg="bg-surface"
       borderRadius="lg"
-      boxShadow={useColorModeValue("sm", "sm-dark")}
+      boxShadow={"0px 12px 40px rgba(16, 24, 64, 0.24)"}
       {...boxProps}
       bgColor={"white"}
+      maxWidth={"100%"}
+      minWidth={"200px"}
     >
       <Box
         px={{
@@ -40,12 +44,6 @@ export const Stat = (props) => {
       >
         <Stack>
           <HStack justify="space-between">
-            <Text fontSize="sm" color="muted">
-              {quantity}
-            </Text>
-            <Icon as={FiMoreVertical} boxSize="5" color="muted" />
-          </HStack>
-          <HStack justify="space-between">
             <Heading
               size={useBreakpointValue({
                 base: "sm",
@@ -54,15 +52,27 @@ export const Stat = (props) => {
             >
               {coin}
             </Heading>
+
+            {/* <Icon as={FiMoreVertical} boxSize="5" color="muted" /> */}
+          </HStack>
+          <HStack justify="space-between">
+            <Text fontSize="sm" color="muted">
+              {quantity.toFixed(2)}
+            </Text>
+
             <Badge variant="subtle" colorScheme={id % 2 == 0 ? "green" : "red"}>
               <HStack spacing="1">
                 <Icon as={id % 2 == 0 ? FiArrowUpRight : FiArrowDownRight} />
                 <Text>{id}</Text>
-                {console.log(quantity)}
-                {console.log(id)}
               </HStack>
             </Badge>
           </HStack>
+          <Text fontSize="sm" color="muted">
+            {"Cost Basis: " + grossAmount}
+          </Text>
+          <Text fontSize="sm" color="muted">
+            {"Current Price: 79.37"}
+          </Text>
         </Stack>
       </Box>
       <Divider />

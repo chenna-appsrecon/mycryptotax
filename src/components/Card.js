@@ -1,5 +1,6 @@
-import { Box, Container, SimpleGrid } from "@chakra-ui/react";
+import { Box, Container, Flex, Link } from "@chakra-ui/react";
 import * as React from "react";
+// import { Link } from "react-router-dom";
 import { Stat } from "./Stats";
 const stats = [
   {
@@ -28,10 +29,10 @@ const stats = [
   },
 ];
 
+let USDT = 79.35;
+
 export const Card = ({ holdings }) => {
   let coins = holdings && Object.keys(holdings);
-  console.log("coins", coins);
-  console.log("holdings", holdings);
   return (
     <Box
       as="section"
@@ -41,10 +42,11 @@ export const Card = ({ holdings }) => {
       }}
     >
       {/* <Container> */}
-      <SimpleGrid
+      <Flex
+        wrap={"wrap"}
         columns={{
           base: 1,
-          md: 4,
+          md: 5,
         }}
         gap={{
           base: "5",
@@ -54,9 +56,22 @@ export const Card = ({ holdings }) => {
         {coins &&
           coins.length > 0 &&
           coins.map((coin, i) => (
-            <Stat key={i} id={i} quantity={holdings[coin]} coin={coin} />
+            <Link
+              href="/coindetails"
+              // as="span"
+              ms="5px"
+              fontWeight="bold"
+            >
+              <Stat
+                key={i}
+                id={i}
+                quantity={holdings[coin].quantity}
+                grossAmount={holdings[coin].grossAmount}
+                coin={coin}
+              />
+            </Link>
           ))}
-      </SimpleGrid>
+      </Flex>
       {/* </Container> */}
     </Box>
   );

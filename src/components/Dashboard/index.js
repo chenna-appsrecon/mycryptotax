@@ -8,7 +8,7 @@ import { APP_URL } from "../../constants";
 import { BarChart } from "./BarChart";
 import { Card } from "../Card";
 import { PageHeader } from "../PageHeader";
-import { CryptoData } from "../../CryptoData";
+import { cryptoSymbols } from "../../CryptoData";
 const API_URL = "https://stockpalapi.glassball.app";
 
 const Dashboard = () => {
@@ -19,11 +19,8 @@ const Dashboard = () => {
   const [holdings, setHoldings] = useState({});
   const [totalAssets, setTotalAssets] = useState(0);
   const [transactionData, setTransactionData] = useState();
-  let token = localStorage.getItem("token");
 
   useEffect(() => {
-    console.log("err");
-
     if (!cryptoData.length) {
       GetCryptoData();
       fetchTransactions();
@@ -54,47 +51,89 @@ const Dashboard = () => {
       })
       .catch((e) => console.log(e));
   };
-  let details = {};
+  const getCoinDetails = (coin) => {
+    axios
+      .get(
+        "https://api.wazirx.com/sapi/v1/ticker/24hr?symbol=" +
+          cryptoSymbols[coin]
+      )
+      // .then((res) => res.json())
+      .then((response) => {
+        if (response) {
+          console.log("getCoinDetails", response.data);
+        }
+      })
+      .catch((e) => console.log(e));
+  };
+
+  // let details = {};
 
   const getCryptoDetails = (data) => {
-    console.log(data);
+    // console.log(data);
     let holdingsObj = {};
     let assetValue = 0;
     data.map((item) => {
       if (holdingsObj[item.securityName]) {
         if (item.feePaidIn !== "INR") {
           if (holdingsObj[item.feePaidIn]) {
-            holdingsObj[item.feePaidIn] =
-              holdingsObj[item.feePaidIn] - parseFloat(item.netAmount);
+            let obj = { ...holdingsObj[item.feePaidIn] };
+            obj = { quantity: obj.quantity - parseFloat(item.netAmount) };
+            holdingsObj[item.feePaidIn] = {
+              ...holdingsObj[item.feePaidIn],
+              ...obj,
+            };
           } else {
-            holdingsObj[item.feePaidIn] = -parseFloat(item.netAmount);
+            let obj = { ...holdingsObj[item.feePaidIn] };
+            obj = { quantity: (obj.quantity = -parseFloat(item.netAmount)) };
+            holdingsObj[item.feePaidIn] = {
+              ...holdingsObj[item.feePaidIn],
+              ...obj,
+            };
           }
         }
         assetValue = parseFloat(assetValue) + parseFloat(item.quantity);
-        holdingsObj[item.securityName] += parseFloat(item.quantity);
+        holdingsObj[item.securityName].quantity += parseFloat(item.quantity);
+        holdingsObj[item.securityName].grossAmount = parseFloat(
+          item.grossAmount
+        );
       } else {
         if (item.feePaidIn !== "INR") {
           if (holdingsObj[item.feePaidIn]) {
-            holdingsObj[item.feePaidIn] =
-              holdingsObj[item.feePaidIn] - parseFloat(item.netAmount);
+            let obj = { ...holdingsObj[item.feePaidIn] };
+            obj = { quantity: obj.quantity - parseFloat(item.netAmount) };
+            holdingsObj[item.feePaidIn] = {
+              ...holdingsObj[item.feePaidIn],
+              ...obj,
+            };
           } else {
-            holdingsObj[item.feePaidIn] = -parseFloat(item.netAmount);
+            let obj = { ...holdingsObj[item.feePaidIn] };
+            obj = { quantity: (obj.quantity = -parseFloat(item.netAmount)) };
+            holdingsObj[item.feePaidIn] = {
+              ...holdingsObj[item.feePaidIn],
+              ...obj,
+            };
           }
         }
         assetValue = parseFloat(assetValue) + parseFloat(item.quantity);
-        holdingsObj[item.securityName] = parseFloat(item.quantity);
+        holdingsObj[item.securityName] = {
+          quantity: parseFloat(item.quantity),
+          grossAmount: parseFloat(item.grossAmount),
+        };
       }
     });
     setTotalAssets(assetValue);
-    data.map((item) => {
-      if (details[item.securityName]) {
-        details[item.securityName] += parseFloat(item.quantity);
-      } else {
-        details[item.securityName] = parseFloat(item.quantity);
-      }
-    });
+    // details &&
+    //   Object.keys(details) &&
+    //   Object.keys(details).length > 0 &&
+    //   Object.keys(details).map(async (coin) => {
+    //     const apiResponse = await fetch(
+    //       "https://api.wazirx.com/sapi/v1/ticker/24hr?symbol=" +
+    //         cryptoSymbols[coin]
+    //     );
+    //     const apiResponseJson = await apiResponse.json();
+    //   });
     setHoldings(holdingsObj);
-    console.log("details", details);
+    // console.log("details", details);
     console.log("holdingsObj", holdingsObj);
   };
 

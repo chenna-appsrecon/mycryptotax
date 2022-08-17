@@ -52,8 +52,12 @@ function SignIn() {
 
         if (response.token) {
           localStorage.setItem("token", response.token);
-          setIsLoading(false);
-          navigate("/dashboard");
+          setTimeout(() => {
+            setIsLoading(false);
+            navigate("/dashboard");
+          }, 1500);
+        } else {
+          console.log("No Token: ", response);
         }
         return response;
       })

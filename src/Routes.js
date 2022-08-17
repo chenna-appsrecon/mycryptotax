@@ -20,6 +20,7 @@ import Dashboard from "./components/Dashboard";
 import UserProfileEdit from "./profile";
 import { Transactions } from "./components/Transactions";
 import { SourceUpload } from "./components/SourceUpload";
+import CoinDetails from "./components/CoinDetails";
 
 const SidebarWithHeader = lazy(() => import("./components/SideNavBar"));
 // const LoginPage = lazy(() => import("./Auth/SignIn"));
@@ -77,6 +78,7 @@ const App = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/fileUpload" element={<SourceUpload />} />
+          <Route path="/coindetails" element={<CoinDetails />} />
 
           <Route path="/profile" element={<UserProfileEdit />} />
           {/* <Route path="/" element={<SidebarWithHeader />} /> */}
