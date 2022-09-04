@@ -6,6 +6,16 @@ import {
   Navigate,
 } from "react-router-dom";
 import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import {
   Skeleton,
   Stack,
   SkeletonCircle,
@@ -21,6 +31,7 @@ import UserProfileEdit from "./profile";
 import { Transactions } from "./components/Transactions";
 import { SourceUpload } from "./components/SourceUpload";
 import CoinDetails from "./components/CoinDetails";
+import WalletApp from "./components/Wallet";
 
 const SidebarWithHeader = lazy(() => import("./components/SideNavBar"));
 // const LoginPage = lazy(() => import("./Auth/SignIn"));
@@ -55,7 +66,15 @@ const PublicRoute = ({ component: Element, restricted, ...rest }) => {
     />
   );
 };
-
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 const App = () => {
   const isAuthenticated = true;
   //   const isAuthenticated = getToken();
@@ -74,11 +93,13 @@ const App = () => {
         <Routes>
           <Route path="/signin" element={<LoginPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/connectwallet" element={<WalletApp />} />
+
           <Route path="/signup" element={<Register />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/fileUpload" element={<SourceUpload />} />
-          <Route path="/coindetails" element={<CoinDetails />} />
+          <Route path="/coindetails/:id/:quantity" element={<CoinDetails />} />
 
           <Route path="/profile" element={<UserProfileEdit />} />
           {/* <Route path="/" element={<SidebarWithHeader />} /> */}

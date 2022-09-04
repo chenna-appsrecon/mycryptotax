@@ -1,13 +1,17 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+// This is the chainId your dApp will work on.
+const activeChainId = ChainId.Rinkeby;
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <ThirdwebProvider desiredChainId={activeChainId}>
+      <App />
+    </ThirdwebProvider>
   </React.StrictMode>
 );
 

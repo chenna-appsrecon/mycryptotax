@@ -42,7 +42,7 @@ const LinkItems = [
   { name: "Dashboard", icon: FiHome, path: "/dashboard" },
   { name: "Transactions", icon: FiTrendingUp, path: "/transactions" },
   { name: "Add Sources", icon: FiCompass, path: "/fileUpload" },
-  { name: "Wallets", icon: FiStar, path: "/dashboard" },
+  { name: "Wallets", icon: FiStar, path: "/connectwallet" },
   { name: "Documents", icon: FiSettings, path: "/dashboard" },
 ];
 
@@ -69,7 +69,7 @@ export default function SidebarWithHeader({ children }) {
       </Drawer>
       {/* mobilenav */}
       <MobileNav onOpen={onOpen} />
-      <Box ml={{ base: 0, md: 60 }} p="4" padding={30}>
+      <Box ml={{ base: 0, md: 60 }} p="4" padding={30} background="white">
         {children}
       </Box>
     </Box>

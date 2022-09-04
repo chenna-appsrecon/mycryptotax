@@ -63,7 +63,6 @@ function SignUp() {
     })
       .then((res) => res.json())
       .then((response) => {
-        console.log("response = ", response);
         if (response.token) {
           localStorage.setItem("token", response.token);
           handleMiddleWareLogin(response.token);
@@ -77,7 +76,6 @@ function SignUp() {
   };
 
   const handleSubmit = () => {
-    console.log("E", email, password);
     handleRegistration();
   };
   const handleMiddleWareLogin = (token) => {
@@ -90,7 +88,6 @@ function SignUp() {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         setIsLoading(false);
         navigate("/fileUpload");
       })

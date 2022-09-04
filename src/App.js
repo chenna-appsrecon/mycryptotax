@@ -1,6 +1,7 @@
 import * as React from "react";
 
 // 1. import `ChakraProvider` component
+
 import { extendTheme, ChakraProvider } from "@chakra-ui/react";
 import Routes from "./Routes";
 

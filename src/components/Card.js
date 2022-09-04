@@ -1,7 +1,9 @@
-import { Box, Container, Flex, Link } from "@chakra-ui/react";
-import * as React from "react";
-// import { Link } from "react-router-dom";
+import { Box, Container, Flex } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import axios from "axios";
 import { Stat } from "./Stats";
+import { cryptoSymbols } from "../CryptoData";
 const stats = [
   {
     label: "Total Subscribers",
@@ -31,8 +33,31 @@ const stats = [
 
 let USDT = 79.35;
 
-export const Card = ({ holdings }) => {
-  let coins = holdings && Object.keys(holdings);
+export const Card = ({ holdings, coinsLatestPrice }) => {
+  const { id } = useParams();
+  let coins = holdings ? Object.keys(holdings) : [];
+  // const [coins, setCoins] = useState(data);
+  useEffect(() => {
+    // coins.map((item) => {
+    //   getCoinDetails(item);
+    // });
+  }, []);
+
+  const getCoinDetails = (coin) => {
+    axios
+      .get(
+        "https://api.wazirx.com/sapi/v1/ticker/24hr?symbol=" +
+          cryptoSymbols[coin]
+      )
+      // .then((res) => res.json())
+      .then((response) => {
+        if (response) {
+          console.log("getCoinDetails", response.data);
+        }
+      })
+      .catch((e) => console.log(e));
+  };
+
   return (
     <Box
       as="section"
@@ -55,22 +80,44 @@ export const Card = ({ holdings }) => {
       >
         {coins &&
           coins.length > 0 &&
-          coins.map((coin, i) => (
-            <Link
-              href="/coindetails"
-              // as="span"
-              ms="5px"
-              fontWeight="bold"
-            >
-              <Stat
+          coins.map((coin, i) => {
+            // console.log(
+            //   holdings[coin].name,
+            //   "-",
+            //   coinsLatestPrice[holdings[coin].name]
+            // );
+            return (
+              <Link
                 key={i}
-                id={i}
-                quantity={holdings[coin].quantity}
-                grossAmount={holdings[coin].grossAmount}
-                coin={coin}
-              />
-            </Link>
-          ))}
+                to={
+                  "/coindetails/" +
+                  holdings[coin].name.toLowerCase() +
+                  "/" +
+                  holdings[coin].quantity
+                }
+                // as="span"
+                ms="5px"
+                fontWeight="bold"
+              >
+                <Stat
+                  key={i}
+                  id={i}
+                  quantity={holdings[coin].quantity}
+                  grossAmount={holdings[coin].grossAmount}
+                  coin={coin}
+                  inr_24h_change={
+                    coinsLatestPrice[holdings[coin].name.toLowerCase()] &&
+                    coinsLatestPrice[holdings[coin].name.toLowerCase()]
+                      .inr_24h_change
+                  }
+                  currentPrice={
+                    coinsLatestPrice[holdings[coin].name.toLowerCase()] &&
+                    coinsLatestPrice[holdings[coin].name.toLowerCase()].inr
+                  }
+                />
+              </Link>
+            );
+          })}
       </Flex>
       {/* </Container> */}
     </Box>

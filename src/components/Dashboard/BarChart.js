@@ -21,7 +21,7 @@ ChartJS.register(
 
 export const BarChart = ({ chartData }) => {
   if (chartData) {
-    console.log("BarChart", chartData);
+    // console.log("BarChart", chartData);
     let data = {
       labels: chartData.map((crypto) => crypto.symbol),
       datasets: [

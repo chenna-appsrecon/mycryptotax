@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -5,40 +6,60 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import * as React from "react";
 
-export const PageHeader = ({ totalAssets }) => (
-  <Box
-    as="section"
-    // pt={{
-    //   base: "4",
-    //   md: "8",
-    // }}
-    // pb={{
-    //   base: "12",
-    //   md: "24",
-    // }}
-    // bgColor="white"
-  >
+export const PageHeader = ({ totalAssets, holdings, coinsLatestPrice }) => {
+  const [portfolioValue, setPortfolioValue] = useState("");
+
+  // console.log(coinsLatestPrice);
+  // console.log(holdings);
+
+  useEffect(() => {
+    getPortfolioValue();
+  }, [coinsLatestPrice]);
+
+  const getPortfolioValue = () => {
+    let value = 0;
+    Object.values(holdings).map((item) => {
+      value = value + coinsLatestPrice[item.name].inr * item.quantity;
+    });
+    setPortfolioValue(value);
+  };
+
+  return (
     <Box
-      bg="bg-surface"
-      //   px={{
-      //     base: "4",
-      //     md: "6",
-      //   }}
-      //   py="5"
-      //   boxShadow={useColorModeValue("sm", "sm-dark")}
-      //   borderTopWidth="4px"
-      //   borderColor="accent"
+      as="section"
+      // pt={{
+      //   base: "4",
+      //   md: "8",
+      // }}
+      // pb={{
+      //   base: "12",
+      //   md: "24",
+      // }}
+      // bgColor="white"
     >
-      <Stack spacing="1">
-        <Text fontSize="lg" fontWeight="medium">
-          Total Portfolio Value: {totalAssets} Coins
-        </Text>
-        <Text color="muted" fontSize="sm">
-          Overview of all your assets
-        </Text>
-      </Stack>
+      <Box
+        bg="bg-surface"
+        //   px={{
+        //     base: "4",
+        //     md: "6",
+        //   }}
+        //   py="5"
+        //   boxShadow={useColorModeValue("sm", "sm-dark")}
+        //   borderTopWidth="4px"
+        //   borderColor="accent"
+      >
+        <Stack spacing="1">
+          <Text fontSize="lg" fontWeight="medium">
+            <span style={{ fontSize: "1.5em" }}>
+              <b>{"Rs." + portfolioValue}</b>
+            </span>
+          </Text>
+          <Text color="muted" fontSize="sm">
+            Your Portfolio Value
+          </Text>
+        </Stack>
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};

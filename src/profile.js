@@ -26,7 +26,6 @@ export default function UserProfileEdit() {
   const [data, setData] = useState("");
   useEffect(() => {
     handleProfile();
-    console.log("============");
     // handleProfileAxios();
   }, []);
 
@@ -39,7 +38,6 @@ export default function UserProfileEdit() {
     })
       .then((res) => res.json())
       .then((response) => {
-        console.log("response = ", response);
         setData(response);
         // if (response.token) {
         //   localStorage.setItem("token", response.token);

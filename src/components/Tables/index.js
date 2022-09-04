@@ -44,7 +44,9 @@ const TableComponent = ({ tableData }) => {
                 <Tr key={i}>
                   {keys.map((key, i) => {
                     if (key == "at") {
-                      return <Td>{new Date(rowData[key]).toDateString()}</Td>;
+                      return (
+                        <Td key={i}>{new Date(rowData[key]).toDateString()}</Td>
+                      );
                     }
                     return <Td key={i}>{rowData[key].toUpperCase()}</Td>;
                   })}

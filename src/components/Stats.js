@@ -19,8 +19,18 @@ import {
 } from "react-icons/fi";
 
 export const Stat = (props) => {
-  const { label, value, delta, quantity, coin, id, grossAmount, ...boxProps } =
-    props;
+  const {
+    label,
+    value,
+    delta,
+    quantity,
+    coin,
+    id,
+    currentPrice,
+    grossAmount,
+    inr_24h_change,
+    ...boxProps
+  } = props;
   let ADA = 44.05;
   return (
     <Box
@@ -60,18 +70,26 @@ export const Stat = (props) => {
               {quantity.toFixed(2)}
             </Text>
 
-            <Badge variant="subtle" colorScheme={id % 2 == 0 ? "green" : "red"}>
+            <Badge
+              variant="subtle"
+              colorScheme={inr_24h_change > 0 ? "green" : "red"}
+            >
               <HStack spacing="1">
-                <Icon as={id % 2 == 0 ? FiArrowUpRight : FiArrowDownRight} />
-                <Text>{id}</Text>
+                <Icon
+                  as={inr_24h_change > 0 ? FiArrowUpRight : FiArrowDownRight}
+                />
+                <Text>{inr_24h_change && inr_24h_change.toFixed(5)}</Text>
               </HStack>
             </Badge>
           </HStack>
+
           <Text fontSize="sm" color="muted">
-            {"Cost Basis: " + grossAmount}
+            <span>
+              Current Price: Rs.<b>{currentPrice}</b>
+            </span>
           </Text>
           <Text fontSize="sm" color="muted">
-            {"Current Price: 79.37"}
+            {"Cost Basis: Rs." + grossAmount}
           </Text>
         </Stack>
       </Box>

@@ -77,7 +77,7 @@ function FileUpload() {
       }, {});
       return obj;
     });
-    console.log("array", array);
+    // console.log("array", array);
     setArray(array);
   };
 
@@ -101,7 +101,7 @@ function FileUpload() {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         setLoading(false);
         onOpen();
         setTimeout(() => {
@@ -116,7 +116,7 @@ function FileUpload() {
     if (files && files[0]) {
       fileReader.onload = function (event) {
         const text = event.target.result;
-        console.log("text", text);
+        // console.log("text", text);
         csvFileToArray(text);
       };
       fileReader.readAsText(files[0]);
