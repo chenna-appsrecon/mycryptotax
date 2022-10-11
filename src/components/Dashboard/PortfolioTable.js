@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Thead,
@@ -22,39 +23,71 @@ import {
   Flex,
   Link,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { APP_URL } from "../../constants";
+import { headers } from "../../api";
 let headerKeys = [
   "Asset",
-  "Purchased value",
-  "Current Price",
   "Holdings",
+  // "Current Price",
+  "Purchased value",
+  "Difference",
   "Current Value",
 ];
 
-const PortfolioTable = ({ holdings, coinsLatestPrice }) => {
+const PortfolioTable = () => {
   const [array, setArray] = useState([]);
-  useEffect(() => {
-    getHoldingsDetails();
-  }, [coinsLatestPrice, holdings]);
+  const navigate = useNavigate();
 
-  const getHoldingsDetails = () => {
+  useEffect(() => {
+    // getHoldingsDetailsFromAPI();
+  }, []);
+
+  const getHoldingsDetailsFromAPI = () => {
+    axios
+      .get(APP_URL + "gettransactionsdata", { headers: headers })
+      .then((response) => {
+        console.log("response", response);
+        calculatingHoldings(response.data);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
+  const calculatingHoldings = (givenData) => {
     let data = [];
-    Object.keys(holdings).map((key) => {
+    let keys = Object.keys(givenData.totalCurrentValue);
+    keys.map((key) => {
       let obj = {};
       obj["Asset"] = key;
-      obj["Holdings"] = holdings[key].quantity;
-      obj["Purchased value"] = holdings[key].grossAmount;
-      obj["Current Value"] =
-        coinsLatestPrice[holdings[key].name.toLowerCase()] &&
-        coinsLatestPrice[holdings[key].name.toLowerCase()].inr *
-          holdings[key].quantity;
-      obj["Current Price"] =
-        coinsLatestPrice[holdings[key].name.toLowerCase()] &&
-        coinsLatestPrice[holdings[key].name.toLowerCase()].inr;
+      obj["Holdings"] = givenData.totalQuantity[key]
+        ? givenData.totalQuantity[key]
+        : 0;
+      obj["Purchased value"] = givenData.totalPurchaseValue[key];
+      obj["Current Value"] = givenData.totalCurrentValue[key];
+      obj["Difference"] = givenData.totalDiff[key];
       data.push(obj);
     });
     setArray(data);
   };
-
+  // const getHoldingsDetails = () => {
+  //   let data = [];
+  //   Object.keys(holdings).map((key) => {
+  //     let obj = {};
+  //     obj["Asset"] = key;
+  //     obj["Holdings"] = holdings[key].quantity.toFixed(5);
+  //     obj["Purchased value"] = holdings[key].costBasis;
+  //     obj["Current Value"] =
+  //       coinsLatestPrice[holdings[key].name.toLowerCase()] &&
+  //       coinsLatestPrice[holdings[key].name.toLowerCase()].inr *
+  //         holdings[key].quantity;
+  //     obj["Current Price"] =
+  //       coinsLatestPrice[holdings[key].name.toLowerCase()] &&
+  //       coinsLatestPrice[holdings[key].name.toLowerCase()].inr;
+  //     data.push(obj);
+  //   });
+  //   setArray(data);
+  // };
+  // console.log("array", array);
   return (
     <Box flex="1" p="6">
       <Box
@@ -98,13 +131,21 @@ const PortfolioTable = ({ holdings, coinsLatestPrice }) => {
                 array.length > 0 &&
                 array.map((rowData, i) => {
                   return (
-                    <Tr key={i}>
+                    <Tr
+                      key={i}
+                      onClick={() =>
+                        navigate({
+                          pathname:
+                            "/coindetails/" +
+                            rowData.Asset +
+                            "/" +
+                            rowData.Holdings,
+                        })
+                      }
+                    >
                       {headerKeys.map((val, i) => (
                         <Td key={i}>{rowData[val]}</Td>
                       ))}
-                      {/* {keys.map((key) => {
-                      return <Td>{rowData[key]}</Td>;
-                    })} */}
                     </Tr>
                   );
                 })}

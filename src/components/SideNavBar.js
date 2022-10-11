@@ -30,9 +30,10 @@ import {
   FiStar,
   FiSettings,
   FiMenu,
-  FiBell,
   FiChevronDown,
 } from "react-icons/fi";
+import { RepeatIcon } from "@chakra-ui/icons";
+
 import { IconType } from "react-icons";
 import { ReactText } from "react";
 import TableComponent from "./Tables";
@@ -48,6 +49,7 @@ const LinkItems = [
 
 export default function SidebarWithHeader({ children }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  console.log("SidebarWithHeader");
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
       <SidebarContent
@@ -181,8 +183,9 @@ const MobileNav = ({ onOpen, ...rest }) => {
           size="lg"
           variant="ghost"
           aria-label="open menu"
-          icon={<FiBell />}
+          icon={<RepeatIcon />}
         />
+
         <Flex alignItems={"center"}>
           <Menu>
             <MenuButton
@@ -203,9 +206,9 @@ const MobileNav = ({ onOpen, ...rest }) => {
                   spacing="1px"
                   ml="2"
                 >
-                  <Text fontSize="sm">Justina Clark</Text>
+                  <Text fontSize="sm">Suresh </Text>
                   <Text fontSize="xs" color="gray.600">
-                    Admin
+                    {/* Admin */}
                   </Text>
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>

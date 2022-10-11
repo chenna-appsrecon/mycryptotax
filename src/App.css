@@ -33,7 +33,24 @@
   padding: 6px 12px;
   cursor: pointer;
 }
-
+.coin-chart {
+  max-width: 50%;
+  width: 50%;
+}
+.coin-graph-container {
+  width: 75%;
+    display: flex;
+    padding: 40px;
+    margin-top: 25px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+@media only screen and (max-width: 600px) {
+  .coin-chart {
+    min-width: 100%;
+  }
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

@@ -51,6 +51,7 @@ import { Option } from "./Option";
 function FileUpload() {
   const [files, setFile] = useState("");
   const [array, setArray] = useState([]);
+  const [value, setValue] = useState("wazirx");
   const [isLoading, setLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dataUploaded, setDataUploaded] = useState(false);
@@ -58,11 +59,10 @@ function FileUpload() {
   const navigate = useNavigate();
   const titleColor = mode("teal.300", "teal.200");
   const fileReader = new FileReader();
-  // useEffect(() => {
-  //   onOpen();
-  // }, []);
+
   const handleOnChange = (e) => {
     setFile(e.target.files);
+    console.log(e.target.files);
   };
 
   const csvFileToArray = (string) => {
@@ -84,8 +84,9 @@ function FileUpload() {
   const handleOnSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+
     axios
-      .post(APP_URL + "upload", files, { headers: headers })
+      .post(APP_URL + "upload", { files, name: value }, { headers: headers })
       .then((response) => {
         // console.log("response", response);
         setDataUploaded(true);
@@ -127,7 +128,7 @@ function FileUpload() {
     onClose();
     navigate("/transactions");
   };
-
+  console.log("setValue", value);
   return (
     <div style={{ textAlign: "center" }}>
       <Container maxW="container.sm" bg="white" p={"20px"}>
@@ -168,8 +169,13 @@ function FileUpload() {
                 </Option>
               </CustomSelect>
             </FormControl> */}
-            <Select placeholder="Wazirx">
-              <option value="option1">Wazirx</option>
+            <Select
+              placeholder="Select Exchange"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            >
+              <option value="wazirx">Wazirx</option>
+              <option value="zebpay">Zebpay</option>
             </Select>
             <Square size="10" bg="bg-subtle" borderRadius="lg">
               <Icon as={FiUploadCloud} boxSize="5" color="muted" />

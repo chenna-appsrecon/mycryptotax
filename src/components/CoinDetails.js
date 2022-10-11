@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { useParams } from "react-router-dom";
-
-// import {
-//   Chart as ChartJS,
-//   CategoryScale,
-//   LinearScale,
-//   PointElement,
-//   LineElement,
-//   Title,
-//   Tooltip,
-//   Legend,
-// } from "chart.js";
-
+import axios from "axios";
+import moment from "moment";
 import {
   Box,
   Stack,
@@ -41,7 +31,7 @@ import {
   CircularProgress,
   Image,
 } from "@chakra-ui/react";
-import axios from "axios";
+
 import {
   FiArrowDownRight,
   FiArrowUpRight,
@@ -53,20 +43,12 @@ import { headers, HistoricalChart, SingleCoin } from "../api";
 import { APP_URL, headerKeys, numberWithCommas } from "../constants";
 import { CryptoState } from "./CryptoContext";
 import { chartDays } from "./Chartdays";
-
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   PointElement,
-//   LineElement,
-//   Title,
-//   Tooltip,
-//   Legend
-// );
+import { symbolDetails } from "../Coindeckodetails";
 const API_URL = "https://stockpalapi.glassball.app";
 
 const CoinDetails = () => {
   const { id, quantity } = useParams();
+  const [flag, setflag] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [cryptoData, setCryptoData] = useState([]);
@@ -75,18 +57,28 @@ const CoinDetails = () => {
   const [totalAssets, setTotalAssets] = useState(0);
   const [transactionData, setTransactionData] = useState();
   const [array, setArray] = useState([]);
-  const [historicData, setHistoricData] = useState();
+  const [graphData, setGraphData] = useState([]);
+  const [historicData, setHistoricData] = useState([]);
   const [coinData, setCoinData] = useState();
   const [days, setDays] = useState(1);
+  const [sum, setSum] = useState(0);
   // const { currency } = CryptoState();
   const [currency, setCurrency] = useState("INR");
   const [symbol, setSymbol] = useState("₹");
-  const [flag, setflag] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(0);
+
   const fetchHistoricData = async (days) => {
-    const { data } = await axios.get(HistoricalChart(id, days, currency));
+    setDays(days);
+    const { data } = await axios.get(
+      HistoricalChart(symbolDetails[id.toLowerCase()].id, days, currency)
+    );
+    setHistoricData(data.prices);
+    let res = [...data.prices].reverse();
+    setSum(res[0][1] * quantity);
+    setCurrentPrice(res[0][1]);
     setflag(true);
-    setHistoricData(data.prices.slice(0, 15));
   };
+
   const downloadCSV = (csvStr) => {
     var hiddenElement = document.createElement("a");
     // hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvStr);
@@ -95,6 +87,7 @@ const CoinDetails = () => {
     hiddenElement.download = "MyCryptoTaxDetails.csv";
     hiddenElement.click();
   };
+
   const exportCSVFromTable = (columns, csvData) => {
     // console.log("columns", columns);
     // console.log("csvData", csvData);
@@ -119,37 +112,74 @@ const CoinDetails = () => {
     // console.log("csvString", csvString);
     downloadCSV(csvString);
   };
-  const fetchCoin = async () => {
-    const { data } = await axios.get(SingleCoin(id));
 
+  const fetchCoin = async () => {
+    const { data } = await axios.get(
+      SingleCoin(symbolDetails[id.toLowerCase()].id)
+    );
     setCoinData(data);
-    fetchTransactions(data.symbol);
   };
 
   useEffect(() => {
     fetchHistoricData(days);
+    fetchTransactionsbyCoin();
+    // fetchGraphbyCoin();
     fetchCoin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const updateChartData = (day) => {
     fetchHistoricData(day);
   };
-  // useEffect(() => {
-  //   fetchTransactions();
-  // }, []);
-  const fetchTransactions = (symbol) => {
+
+  const fetchTransactionsbyCoin = () => {
     axios
-      .get(APP_URL + "gettransaction", { headers: headers })
+      .post(
+        APP_URL + "gettransactionbycoin",
+        { coin: `${id}` },
+        { headers: headers }
+      )
       .then((response) => {
         let data = response.data;
-        let reqData = data.filter(
-          (item) => item.securityName.toLowerCase() == symbol
-        );
-        setArray(reqData);
+        setArray(data);
         // console.log("reqData", symbol, reqData);
       })
       .catch((err) => console.log("err: ", err));
   };
+  const fetchGraphbyCoin = () => {
+    axios
+      .post(
+        APP_URL + "getgraphbycoin",
+        { coin: `${id}`, parameter: "1week" },
+        { headers: headers }
+      )
+      .then((response) => {
+        let data = response.data;
+        setGraphData(data);
+
+        // console.log("reqData", symbol, reqData);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
+  const totalCostData = (dummyData) => {
+    let newReqObj = {};
+    Object.values(dummyData)
+      .flat()
+      .map((item) => {
+        if (newReqObj[item[0]]) {
+          // console.log(newReqObj[item[0]]);
+          newReqObj[item[0]] = newReqObj[item[0]] + (item[1] ? item[1] : 0);
+        } else {
+          newReqObj[item[0]] = item[1] ? item[1] : 0;
+        }
+      });
+    console.log("newReqObj", newReqObj);
+    setSum(newReqObj[moment().format("DD-MM-YYYY")].costBasis);
+    setCurrentPrice(newReqObj[moment().format("DD-MM-YYYY")].current_price);
+    setGraphData(newReqObj);
+    setflag(true);
+  };
+
   // console.log("coinData", coinData);
   return (
     <SidebarWithHeader>
@@ -200,38 +230,25 @@ const CoinDetails = () => {
                 </Badge> */}
         </HStack>
         <Text fontSize="lg" color="muted" mt={1}>
-          <b>
-            {"Total asset value : Rs." +
-              (coinData &&
-                coinData?.market_data.current_price &&
-                coinData?.market_data.current_price[currency.toLowerCase()] *
-                  quantity)}
-          </b>
+          <b>{"Total asset value : Rs." + sum}</b>
         </Text>
         <Text fontSize="md" color="muted" mt={2}>
           {"Holdings: " + (quantity && quantity)}
         </Text>
         <Text fontSize="md" color="muted">
-          {"Current Price: Rs." +
-            (coinData &&
-              coinData?.market_data.current_price &&
-              numberWithCommas(
-                coinData?.market_data.current_price[currency.toLowerCase()]
-              ))}
+          {"Current Price: Rs." + (currentPrice && currentPrice)}
         </Text>
 
         {/* </Box> */}
         <Divider />
         {/* </Flex> */}
-        <div className={""}>
+        <div className={"coin-graph-container"}>
           {!historicData | (flag === false) ? (
-            <CircularProgress
-            // style={{ color: "gold" }}
-            // size={250}
-            // thickness={1}
-            />
+            <Center mt={3}>
+              <CircularProgress isIndeterminate color="green.300" />
+            </Center>
           ) : (
-            <div style={{ width: "50%" }}>
+            <div className="coin-chart" style={{}}>
               <div
                 style={{
                   display: "flex",
@@ -241,6 +258,7 @@ const CoinDetails = () => {
                 }}
               >
                 <div
+                  className=""
                   style={{
                     display: "flex",
                     marginTop: 20,
@@ -252,6 +270,7 @@ const CoinDetails = () => {
                 >
                   {chartDays.map((day) => (
                     <Button
+                      style={{ marginRight: "0.5em" }}
                       key={day.value}
                       onClick={() => {
                         setflag(false);
@@ -267,115 +286,101 @@ const CoinDetails = () => {
               <Box bg={"white"} flex="1">
                 <Line
                   data={{
-                    elements: { line: { tension: 0.4 } },
+                    elements: { line: { tension: 0 } },
                     labels: historicData.map((coin) => {
                       let date = new Date(coin[0]);
                       let time =
                         date.getHours() > 12
                           ? `${date.getHours() - 12}:${date.getMinutes()} PM`
                           : `${date.getHours()}:${date.getMinutes()} AM`;
-                      return days === 1 ? time : date.toLocaleDateString();
+                      return days === 1
+                        ? time
+                        : date.toLocaleDateString() + " " + time;
                     }),
                     datasets: [
                       {
-                        data: historicData.map((coin) => coin[1]),
+                        type: "line",
+                        // backgroundColor: "#5AC53B",
+                        borderColor: "#5AC53B",
+                        borderWidth: 2,
+                        pointBorderColor: "rgba(0, 0, 0, 0)",
+                        pointBackgroundColor: "rgba(0, 0, 0, 0)",
+                        pointHoverBackgroundColor: "#5AC53B",
+                        // pointHoverBorderColor: "#000000",
+                        pointHoverBorderWidth: 4,
+                        pointHoverRadius: 6,
+                        data: historicData.map((coin) => coin[1] * quantity),
                         label: `Price ( Past ${days} Days ) in ${currency}`,
-                        borderColor: "#23E33E",
-                        // backgroundColor:
-                        //   "linear-gradient(180deg, #23E33E -67.46%, rgba(255, 255, 255, 0.0001) 69.63%)",
                         tension: 0.4,
-                        pointStyle: "circle",
-                        pointRadius: 6,
-                        pointHoverRadius: 9,
                       },
                     ],
                     options: {
                       responsive: true,
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: (ctx) =>
-                            "Point Style: " +
-                            ctx.chart.data.datasets[0].pointStyle,
+                      legend: {
+                        display: false,
+                      },
+                      hover: {
+                        intersect: false,
+                      },
+                      elements: {
+                        line: {
+                          tension: 0,
                         },
-                        legend: {
-                          display: false,
+                        point: {
+                          radius: 0,
                         },
                       },
+                      maintainAspectRatio: false,
+                      tooltips: {
+                        mode: "index",
+                        intersect: false,
+                        callbacks: {},
+                      },
+                      scales: {
+                        xAxes: [
+                          {
+                            type: "time",
+                            time: {
+                              format: "MM/DD/YY",
+                              tooltipFormat: "ll",
+                            },
+                            ticks: {
+                              display: false,
+                            },
+                          },
+                        ],
+                        yAxes: [
+                          {
+                            gridLines: {
+                              display: false,
+                            },
+                            ticks: {
+                              display: false,
+                            },
+                          },
+                        ],
+                      },
                     },
+                    // options: {
+                    //   responsive: true,
+                    //   plugins: {
+                    //     title: {
+                    //       display: true,
+                    //       text: (ctx) =>
+                    //         "Point Style: " +
+                    //         ctx.chart.data.datasets[0].pointStyle,
+                    //     },
+                    //     legend: {
+                    //       display: false,
+                    //     },
+                    //   },
+                    // },
                   }}
                 />
               </Box>
             </div>
           )}
         </div>
-
-        {/* <Box bg={"white"} flex="1" p="6">
-          <Box
-            w="full"
-            h="full"
-            rounded="lg"
-            // border="3px dashed currentColor"
-            // color={mode("gray.200", "gray.700")}
-          >
-            {array.length == 0 && (
-              <Center>
-                <Flex
-                  direction={"column"}
-                  justifyContent={"center"}
-                  alignItems={"center"}
-                >
-                  <Text>No Transactions Found! </Text>
-                  <Text>
-                    Please Upload transactions from
-                    <Link ms="5px" fontWeight="bold" href={"/fileUpload"}>
-                      Add Sources tab
-                    </Link>
-                  </Text>
-                </Flex>
-              </Center>
-            )}
-            <TableContainer>
-              <Table variant="simple">
-               
-                <Thead>
-                  <Tr>
-                    {array &&
-                      array.length > 0 &&
-                      headerKeys.map((key, i) => {
-                        return <Th key={i}>{key}</Th>;
-                      })}
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {array &&
-                    array.length > 0 &&
-                    array.map((rowData, i) => {
-                      return (
-                        <Tr key={i}>
-                          {headerKeys.map((val, i) => (
-                            <Td key={i}>{rowData[val]}</Td>
-                          ))}
-                           {keys.map((key) => {
-                      return <Td>{rowData[key]}</Td>;
-                    })} 
-                        </Tr>
-                      );
-                    })}
-                </Tbody>
-                 <Tfoot>
-            <Tr>
-              {headerKeys &&
-                headerKeys.length > 0 &&
-                headerKeys.map((key) => {
-                  return <Th>{key}</Th>;
-                })}
-            </Tr>
-          </Tfoot> 
-              </Table>
-            </TableContainer>
-          </Box>
-        </Box> */}
       </Box>
       <Flex justifyContent={"flex-end"}>
         <Button
@@ -443,15 +448,6 @@ const CoinDetails = () => {
                     );
                   })}
               </Tbody>
-              {/* <Tfoot>
-            <Tr>
-              {headerKeys &&
-                headerKeys.length > 0 &&
-                headerKeys.map((key) => {
-                  return <Th>{key}</Th>;
-                })}
-            </Tr>
-          </Tfoot> */}
             </Table>
           </TableContainer>
         </Box>

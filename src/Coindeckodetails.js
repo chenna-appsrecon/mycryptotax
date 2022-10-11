@@ -5504,8 +5504,8 @@ export const symbolDetails = {
     id: "bitcoinbrand",
   },
   bnb: {
-    name: "Heco-Peg Binance Coin",
-    id: "heco-peg-bnb",
+    id: "binancecoin",
+    name: "BNB",
   },
   beth: {
     name: "Binance ETH staking",

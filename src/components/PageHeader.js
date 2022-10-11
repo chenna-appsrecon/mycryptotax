@@ -7,23 +7,28 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 
-export const PageHeader = ({ totalAssets, holdings, coinsLatestPrice }) => {
-  const [portfolioValue, setPortfolioValue] = useState("");
-
-  // console.log(coinsLatestPrice);
-  // console.log(holdings);
+export const PageHeader = ({ portfolioValue }) => {
+  // const [portfolioValue, setPortfolioValue] = useState("");
 
   useEffect(() => {
-    getPortfolioValue();
-  }, [coinsLatestPrice]);
+    // if (Object.keys(coinsLatestPrice).length > 0) {
+    //   // console.log("coinsLatestPrice", coinsLatestPrice);
+    //   // console.log("holdings", holdings);
+    //   getPortfolioValue();
+    // }
+  }, []);
 
-  const getPortfolioValue = () => {
-    let value = 0;
-    Object.values(holdings).map((item) => {
-      value = value + coinsLatestPrice[item.name].inr * item.quantity;
-    });
-    setPortfolioValue(value);
-  };
+  // const getPortfolioValue = () => {
+  //   let value = 0;
+  //   Object.values(holdings).map((item) => {
+  //     // console.log(item.name, coinsLatestPrice[item.name]);
+  //     value =
+  //       value +
+  //       (coinsLatestPrice[item.name] ? coinsLatestPrice[item.name].inr : 0) *
+  //         item.quantity;
+  //   });
+  //   setPortfolioValue(value);
+  // };
 
   return (
     <Box

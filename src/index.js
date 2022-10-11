@@ -8,11 +8,9 @@ import reportWebVitals from "./reportWebVitals";
 const activeChainId = ChainId.Rinkeby;
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <ThirdwebProvider desiredChainId={activeChainId}>
-      <App />
-    </ThirdwebProvider>
-  </React.StrictMode>
+  <ThirdwebProvider desiredChainId={activeChainId}>
+    <App />
+  </ThirdwebProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

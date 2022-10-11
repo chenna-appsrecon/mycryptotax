@@ -47,7 +47,7 @@ export const Transactions = () => {
       .get(APP_URL + "getprofitlossposition", { headers: headers })
       .then((response) => {
         // setArray(response.data);
-        // console.log("getprofitlossposition: ", response);
+        console.log("getprofitlossposition: ", response);
       })
       .catch((err) => console.log("err: ", err));
   };
