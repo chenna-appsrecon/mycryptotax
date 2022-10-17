@@ -278,8 +278,8 @@ const Dashboard = () => {
         <Spacer />
         <Box>
           <Flex>
-            <Select placeholder="All" size="lg" mr={5}>
-              <option value="wazirx">Wazirx</option>
+            <Select placeholder="Zebpay" size="lg" mr={5}>
+              {/* <option value="wazirx">Wazirx</option> */}
               {/* <option value="option2">CoinDcx </option> */}
               <option value="zebpay">Zebpay</option>
             </Select>

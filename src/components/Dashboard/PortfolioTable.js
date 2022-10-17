@@ -133,6 +133,7 @@ const PortfolioTable = () => {
                   return (
                     <Tr
                       key={i}
+                      style={{ cursor: "pointer" }}
                       onClick={() =>
                         navigate({
                           pathname:
@@ -143,9 +144,26 @@ const PortfolioTable = () => {
                         })
                       }
                     >
-                      {headerKeys.map((val, i) => (
-                        <Td key={i}>{rowData[val]}</Td>
-                      ))}
+                      {headerKeys.map((val, i) => {
+                        if (val == "Difference" && parseInt(rowData[val]) < 0) {
+                          return (
+                            <Td style={{ color: "#FF0000" }} key={i}>
+                              {rowData[val]}
+                            </Td>
+                          );
+                        } else if (
+                          val == "Difference" &&
+                          parseInt(rowData[val]) > 0
+                        ) {
+                          return (
+                            <Td style={{ color: "#00FF00" }} key={i}>
+                              {rowData[val]}
+                            </Td>
+                          );
+                        } else {
+                          return <Td key={i}>{rowData[val]}</Td>;
+                        }
+                      })}
                     </Tr>
                   );
                 })}

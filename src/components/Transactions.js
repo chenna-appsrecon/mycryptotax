@@ -147,9 +147,17 @@ export const Transactions = () => {
                   array.map((rowData, i) => {
                     return (
                       <Tr key={i}>
-                        {headerKeys.map((val, i) => (
-                          <Td key={i}>{rowData[val]}</Td>
-                        ))}
+                        {headerKeys.map((val, i) => {
+                          if (val == "TDS") {
+                            return (
+                              <Td style={{ fontWeight: "bold" }} key={i}>
+                                {rowData[val]}
+                              </Td>
+                            );
+                          } else {
+                            return <Td key={i}>{rowData[val]}</Td>;
+                          }
+                        })}
                         {/* {keys.map((key) => {
                       return <Td>{rowData[key]}</Td>;
                     })} */}
