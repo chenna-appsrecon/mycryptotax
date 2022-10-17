@@ -40,12 +40,12 @@ const PortfolioTable = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // getHoldingsDetailsFromAPI();
+    getHoldingsDetailsFromAPI();
   }, []);
 
   const getHoldingsDetailsFromAPI = () => {
     axios
-      .get(APP_URL + "gettransactionsdata", { headers: headers })
+      .get(APP_URL + "getportfoliodata", { headers: headers })
       .then((response) => {
         console.log("response", response);
         calculatingHoldings(response.data);

@@ -91,8 +91,14 @@ const Dashboard = () => {
     //   item.prices.slice(-100)
     // );
     let reqKeys = Object.keys(dummyData.holdings);
+    // console.log(Object.values(dummyData.totalCurrentValue));
+    let pricesLength = Object.values(dummyData.totalCurrentValue).map(
+      (item) => item.prices.length
+    );
+
+    const min = Math.min(...pricesLength);
     let array = [];
-    for (let index = 0; index < 100; index++) {
+    for (let index = 0; index < min; index++) {
       let sum = 0;
       for (let a = 0; a < reqKeys.length; a++) {
         sum =
@@ -281,7 +287,7 @@ const Dashboard = () => {
             <Spacer />
             <Select placeholder="INR" size="lg">
               <option value="option1">INR</option>
-              <option value="option2">USD </option>
+              {/* <option value="option2">USD </option> */}
             </Select>
           </Flex>
         </Box>

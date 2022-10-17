@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconButton,
@@ -38,13 +38,15 @@ import { IconType } from "react-icons";
 import { ReactText } from "react";
 import TableComponent from "./Tables";
 import { APP_URL } from "../constants";
+import axios from "axios";
+import { headers } from "../api";
 
 const LinkItems = [
   { name: "Dashboard", icon: FiHome, path: "/dashboard" },
   { name: "Transactions", icon: FiTrendingUp, path: "/transactions" },
   { name: "Add Sources", icon: FiCompass, path: "/fileUpload" },
   { name: "Wallets", icon: FiStar, path: "/connectwallet" },
-  { name: "Documents", icon: FiSettings, path: "/dashboard" },
+  // { name: "Documents", icon: FiSettings, path: "/dashboard" },
 ];
 
 export default function SidebarWithHeader({ children }) {
@@ -91,9 +93,11 @@ const SidebarContent = ({ onClose, ...rest }) => {
       {...rest}
     >
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Text fontSize="2xl" fontWeight="bold">
-          MyCryptoTax
-        </Text>
+        <Link href={"/"} style={{ textDecoration: "none" }}>
+          <Text fontSize="2xl" fontWeight="bold">
+            MyCryptoTax
+          </Text>
+        </Link>
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link) => (
@@ -142,11 +146,48 @@ const NavItem = ({ path, icon, children, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
+  const [data, setData] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    handleProfile();
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/signin");
+  };
+  const handleProfile = () => {
+    // setMessage("");
+    // setIsLoading(true);
+    fetch(APP_URL + "profile", {
+      method: "GET",
+      headers: headers,
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        setData(response);
+        // if (response.token) {
+        //   localStorage.setItem("token", response.token);
+        //   //   setIsLoading(false);
+        //   //   navigate("/dashboard");
+        // }
+        return response;
+      })
+      .catch((e) => console.log(e));
+    // if (token) {
+    //   console.log("token", token);
+    //   // setLoading(false);
+    // }
+  };
+
+  const updateCurrentValues = () => {
+    axios
+      .get(APP_URL + "gettransaction", { headers: headers })
+      .then((response) => {
+        // console.log("response", response);
+      })
+      .catch((err) => console.log("err: ", err));
   };
 
   return (
@@ -168,16 +209,16 @@ const MobileNav = ({ onOpen, ...rest }) => {
         aria-label="open menu"
         icon={<FiMenu />}
       />
-
-      <Text
-        display={{ base: "flex", md: "none" }}
-        fontSize="2xl"
-        // fontFamily="monospace"
-        fontWeight="bold"
-      >
-        MyCryptoTax
-      </Text>
-
+      <Link href={"/"} style={{ textDecoration: "none" }}>
+        <Text
+          display={{ base: "flex", md: "none" }}
+          fontSize="2xl"
+          // fontFamily="monospace"
+          fontWeight="bold"
+        >
+          MyCryptoTax
+        </Text>
+      </Link>
       <HStack spacing={{ base: "0", md: "6" }}>
         <IconButton
           size="lg"
@@ -206,7 +247,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
                   spacing="1px"
                   ml="2"
                 >
-                  <Text fontSize="sm">Suresh </Text>
+                  <Text fontSize="sm"> {data && data.name} </Text>
                   <Text fontSize="xs" color="gray.600">
                     {/* Admin */}
                   </Text>

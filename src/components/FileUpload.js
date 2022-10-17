@@ -85,18 +85,42 @@ function FileUpload() {
     e.preventDefault();
     setLoading(true);
 
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+    formData.append("name", value);
+    // console.log("files", files);
+    // console.log("formData", formData);
     axios
-      .post(APP_URL + "upload", { files, name: value }, { headers: headers })
+      .post(APP_URL + "upload", formData, { headers: headers })
       .then((response) => {
         // console.log("response", response);
         setDataUploaded(true);
-        handleTransactions();
+        // setLoading(false);
+        handleProftfolio();
+        // onOpen();
+        // setTimeout(() => {
+        //   navigate("/transactions");
+        // }, 3000);
       })
       .catch((err) => console.log("err: ", err));
   };
-
+  const handleProftfolio = () => {
+    axios
+      .get(APP_URL + "getportfoliodata", { headers: headers })
+      .then((response) => {
+        console.log(response);
+        setLoading(false);
+        onOpen();
+        setTimeout(() => {
+          navigate("/transactions");
+        }, 3000);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
   const handleTransactions = () => {
-    fetch(APP_URL + "transaction", {
+    fetch(APP_URL + "getportfoliodata", {
       method: "GET",
       headers: headers,
     })

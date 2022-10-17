@@ -51,9 +51,12 @@ const WalletApp = () => {
       <SidebarWithHeader>
         <Container maxW="2xl" bg="white" centerContent>
           <Box padding="4" maxW="md">
-            You can can your wallet here
+            You can connect your wallet's here
           </Box>
-          <Box padding="4" bg="" color="black" maxW="md">
+          <Box padding="4" maxW="md">
+            Coming soon...
+          </Box>
+          {/* <Box padding="4" bg="" color="black" maxW="md">
             <Button
               //   variant={"outline"}
               bg="#4FD1C5"
@@ -62,9 +65,9 @@ const WalletApp = () => {
             >
               Connect Metamask wallet
             </Button>
-          </Box>
+          </Box> */}
         </Container>
-        <Container maxW="2xl" bg="white" mt={5} centerContent>
+        {/* <Container maxW="2xl" bg="white" mt={5} centerContent>
           <Box padding="4" maxW="md">
             Add Your Wallet/Exchange
           </Box>
@@ -115,7 +118,7 @@ const WalletApp = () => {
               <Button onClick={onClose}>Cancel</Button>
             </ModalFooter>
           </ModalContent>
-        </Modal>
+        </Modal> */}
       </SidebarWithHeader>
     );
   }

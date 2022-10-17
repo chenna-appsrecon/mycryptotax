@@ -349,7 +349,7 @@ function SignUp() {
                 bg: "teal.400",
               }}
               isLoading={isLoading}
-              loadingText="Signing up"
+              loadingText="Signing up, please wait"
               onClick={handleSubmit}
             >
               SIGN UP
