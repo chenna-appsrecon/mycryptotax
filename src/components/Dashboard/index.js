@@ -33,8 +33,8 @@ let headerKeys = [
   "Asset",
   "Purchased value",
   "Current Value",
-  "Difference",
   "Holdings",
+  "Difference",
 ];
 
 const Dashboard = () => {
