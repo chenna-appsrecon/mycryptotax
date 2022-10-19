@@ -67,6 +67,7 @@ const PortfolioTable = () => {
       obj["Difference"] = givenData.totalDiff[key];
       data.push(obj);
     });
+
     setArray(data);
   };
   // const getHoldingsDetails = () => {
@@ -148,7 +149,7 @@ const PortfolioTable = () => {
                         if (val == "Difference" && parseInt(rowData[val]) < 0) {
                           return (
                             <Td style={{ color: "#FF0000" }} key={i}>
-                              {rowData[val]}
+                              {parseFloat(rowData[val]).toFixed(2)}
                             </Td>
                           );
                         } else if (
@@ -156,8 +157,8 @@ const PortfolioTable = () => {
                           parseInt(rowData[val]) > 0
                         ) {
                           return (
-                            <Td style={{ color: "#00FF00" }} key={i}>
-                              {rowData[val]}
+                            <Td style={{ color: "#5AC53B" }} key={i}>
+                              {parseFloat(rowData[val]).toFixed(2)}
                             </Td>
                           );
                         } else {

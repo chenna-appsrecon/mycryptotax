@@ -13,7 +13,12 @@ import {
   Spacer,
   Select,
   Center,
+  IconButton,
+  Alert,
+  AlertIcon,
+  AlertTitle,
 } from "@chakra-ui/react";
+import { RepeatIcon } from "@chakra-ui/icons";
 import SidebarWithHeader from "../SideNavBar";
 import TableComponent from "../Tables";
 import { CoinList, headers, HistoricalChart } from "../../api";
@@ -38,8 +43,10 @@ let headerKeys = [
 ];
 
 const Dashboard = () => {
+  const localGraphData = JSON.parse(localStorage.getItem("setGraphData"));
+  const localPortfolioValue = localStorage.getItem("setPortfolioValue");
   const { id, quantity } = useParams();
-  const [flag, setflag] = useState(false);
+  const [flag, setflag] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [cryptoData, setCryptoData] = useState([]);
@@ -51,12 +58,15 @@ const Dashboard = () => {
   const [coinsLatestPrice, setCoinsLatestPrice] = useState({});
   const [historicData, setHistoricData] = useState([]);
   const [days, setDays] = useState(1);
-  const [graphData, setGraphData] = useState();
+  const [graphData, setGraphData] = useState(localGraphData);
+  const [isLoading, setIsLoading] = useState(false);
   // const { currency } = CryptoState();
   const [currency, setCurrency] = useState("INR");
   const [sum, setSum] = useState(0);
   const [newFlag, setNewFlag] = useState(false);
-  const [portfolioValue, setPortfolioValue] = useState(0);
+  const [isRefreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState(false);
+  const [portfolioValue, setPortfolioValue] = useState(localPortfolioValue);
 
   useEffect(() => {
     if (!cryptoData.length) {
@@ -64,9 +74,13 @@ const Dashboard = () => {
       fetchTransactions();
       fetchCoinsData();
       // fetchHistoricData(days);
-
+      if (!localGraphData || localGraphData.length == 0) {
+        fetchTransactionsByTime(1);
+      }
+      if (!localPortfolioValue) {
+        handleProftfolio();
+      }
       // totalCostData(dummyData);
-      fetchTransactionsByTime(1);
     }
   }, []);
 
@@ -83,7 +97,45 @@ const Dashboard = () => {
     });
     // console.log("Coingecko", obj);
   };
+  const handleRefresh = () => {
+    setRefreshing(true);
+    axios
+      .get(APP_URL + "getcurrentvalue", { headers: headers })
+      .then((response) => {
+        console.log(response);
+        handleProftfolio();
+      })
+      .catch((err) => {
+        console.log("err: ", err);
+        setRefreshing(false);
+        setRefreshError(true);
+      });
+  };
+  const handleProftfolio = () => {
+    setRefreshing(true);
+    axios
+      .get(APP_URL + "getportfoliodata", { headers: headers })
+      .then((response) => {
+        console.log(response);
+        calculatePortFolioValue(response.data);
+      })
+      .catch((err) => {
+        console.log("err: ", err);
+        setRefreshing(false);
+        setRefreshError(true);
+      });
+  };
 
+  const calculatePortFolioValue = (data) => {
+    const sumWithInitial = Object.values(data.totalCurrentValue).reduce(
+      (previousValue, currentValue) => previousValue + currentValue,
+      0
+    );
+    setPortfolioValue(sumWithInitial);
+    setRefreshing(false);
+    localStorage.setItem("setPortfolioValue", sumWithInitial);
+    console.log("sumWithInitial", sumWithInitial);
+  };
   let newReqObj = {};
 
   const totalCostData = (dummyData) => {
@@ -120,8 +172,8 @@ const Dashboard = () => {
     // setSum(newReqObj[moment().format("DD-MM-YYYY")]);
 
     setGraphData(array);
-    // set(array);
-    setPortfolioValue(array[array.length - 1][1]);
+    setIsLoading(false);
+    localStorage.setItem("setGraphData", JSON.stringify(array));
     setflag(true);
   };
 
@@ -144,6 +196,7 @@ const Dashboard = () => {
   };
 
   const fetchTransactionsByTime = (day) => {
+    // setflag(false);
     axios
       .post(
         APP_URL + "gettransactionbyweek",
@@ -165,7 +218,7 @@ const Dashboard = () => {
     axios
       .get(APP_URL + "getcoinsdata", { headers: headers })
       .then((response) => {
-        console.log("response", response);
+        // console.log("response", response);
         setCoinsLatestPrice(response.data);
       })
       .catch((err) => console.log("err: ", err));
@@ -211,10 +264,10 @@ const Dashboard = () => {
         // .replace(new RegExp("()", "g"), "")
         // .split(" ")
         // .join("-");
-        if (item.securityName == "BTC") {
-          console.log("If BTC======", holdingsObj[item.securityName]);
-          console.log("If BTC q: ", parseFloat(item.quantity));
-        }
+        // if (item.securityName == "BTC") {
+        //   console.log("If BTC======", holdingsObj[item.securityName]);
+        //   console.log("If BTC q: ", parseFloat(item.quantity));
+        // }
       } else {
         if (item.feePaidIn !== "INR") {
           if (holdingsObj[item.feePaidIn]) {
@@ -277,18 +330,43 @@ const Dashboard = () => {
         <PageHeader portfolioValue={portfolioValue} />
         <Spacer />
         <Box>
-          <Flex>
-            <Select placeholder="Zebpay" size="lg" mr={5}>
-              {/* <option value="wazirx">Wazirx</option> */}
-              {/* <option value="option2">CoinDcx </option> */}
-              <option value="zebpay">Zebpay</option>
-            </Select>
-            <Spacer />
-            <Spacer />
-            <Select placeholder="INR" size="lg">
-              <option value="option1">INR</option>
-              {/* <option value="option2">USD </option> */}
-            </Select>
+          <Flex alignItems="center">
+            {refreshError && (
+              <Alert status="error">
+                <AlertIcon />
+                There was an error in refreshing, please wait
+              </Alert>
+            )}
+
+            <Button
+              isLoading={isRefreshing}
+              loadingText="Loading"
+              colorScheme="teal"
+              variant="outline"
+              spinnerPlacement="start"
+              style={{ marginRight: "1em" }}
+              onClick={() => handleRefresh()}
+            >
+              <IconButton
+                size="lg"
+                variant="ghost"
+                aria-label="open menu"
+                icon={<RepeatIcon />}
+              />
+            </Button>
+            <Flex>
+              <Select placeholder="Zebpay" size="lg" mr={5}>
+                {/* <option value="wazirx">Wazirx</option> */}
+                {/* <option value="option2">CoinDcx </option> */}
+                <option value="zebpay">Zebpay</option>
+              </Select>
+              <Spacer />
+              <Spacer />
+              <Select placeholder="INR" size="lg">
+                <option value="option1">INR</option>
+                {/* <option value="option2">USD </option> */}
+              </Select>
+            </Flex>
           </Flex>
         </Box>
       </Flex>
@@ -330,10 +408,22 @@ const Dashboard = () => {
                   <Button
                     key={day.value}
                     onClick={() => {
-                      setNewFlag(false);
+                      // setNewFlag(false);
+                      setIsLoading(true);
                       updateChartData(day.value);
                     }}
-                    style={{ marginRight: "1em" }}
+                    isLoading={day.value === days && isLoading}
+                    style={
+                      day.value === days
+                        ? {
+                            marginRight: "1em",
+                            backgroundColor: "black",
+                            color: "white",
+                          }
+                        : {
+                            marginRight: "1em",
+                          }
+                    }
                     selected={day.value === days}
                   >
                     {day.label}

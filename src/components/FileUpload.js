@@ -56,6 +56,7 @@ function FileUpload() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dataUploaded, setDataUploaded] = useState(false);
   const [colorMode, setColorMode] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const titleColor = mode("teal.300", "teal.200");
   const fileReader = new FileReader();
@@ -84,6 +85,7 @@ function FileUpload() {
   const handleOnSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) {
@@ -104,7 +106,10 @@ function FileUpload() {
         //   navigate("/transactions");
         // }, 3000);
       })
-      .catch((err) => console.log("err: ", err));
+      .catch((err) => {
+        console.log("err: ", err);
+        setError(err);
+      });
   };
   const handleProftfolio = () => {
     axios
@@ -264,10 +269,16 @@ function FileUpload() {
         </Flex>
       </Container>
       <br />
-      {isLoading && !dataUploaded && (
+      {isLoading && !dataUploaded && !error && (
         <Center bg="lightblue" h="100px" color="white">
           Uploading document
         </Center>
+      )}
+      {error && (
+        <Alert status="error" variant="subtle" mb={5}>
+          <AlertIcon />
+          Something went wrong, please try later
+        </Alert>
       )}
       {dataUploaded && (
         <Alert status="success" variant="subtle" mb={5}>
@@ -275,7 +286,7 @@ function FileUpload() {
           Data uploaded successfully!
         </Alert>
       )}
-      {dataUploaded && (
+      {dataUploaded && !error && (
         <Center bg="lightblue" h="100px" color="white">
           Processing transactions, Please wait!
         </Center>
