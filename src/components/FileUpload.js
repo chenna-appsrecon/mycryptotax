@@ -212,7 +212,7 @@ function FileUpload() {
             <label className="custom-file-upload">
               <center style={{ textAlignLast: "center" }}>
                 <input
-                  accept="text/csv"
+                  accept=".csv"
                   onDragEnter={handleOnChange}
                   onChange={handleOnChange}
                   name="File Upload"

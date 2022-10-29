@@ -66,6 +66,7 @@ function SignIn() {
     // }
   };
   const handleSubmit = () => {
+    localStorage.clear();
     handleLogin();
   };
 

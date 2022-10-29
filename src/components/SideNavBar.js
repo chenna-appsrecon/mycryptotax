@@ -44,6 +44,12 @@ import { headers } from "../api";
 const LinkItems = [
   { name: "Dashboard", icon: FiHome, path: "/dashboard" },
   { name: "Transactions", icon: FiTrendingUp, path: "/transactions" },
+  {
+    name: "Gains/Loss",
+    icon: FiTrendingUp,
+    path: "/profitLosstransactions",
+  },
+
   { name: "Add Sources", icon: FiCompass, path: "/fileUpload" },
   { name: "Wallets", icon: FiStar, path: "/connectwallet" },
   // { name: "Documents", icon: FiSettings, path: "/dashboard" },
@@ -220,12 +226,12 @@ const MobileNav = ({ onOpen, ...rest }) => {
         </Text>
       </Link>
       <HStack spacing={{ base: "0", md: "6" }}>
-        {/* <IconButton
+        <IconButton
           size="lg"
           variant="ghost"
           aria-label="open menu"
           icon={<RepeatIcon />}
-        /> */}
+        />
 
         <Flex alignItems={"center"}>
           <Menu>

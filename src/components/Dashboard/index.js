@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import moment from "moment";
 import axios from "axios";
 import {
@@ -41,6 +41,7 @@ let headerKeys = [
   "Holdings",
   "Difference",
 ];
+let token = localStorage.getItem("token");
 
 const Dashboard = () => {
   const localGraphData = JSON.parse(localStorage.getItem("setGraphData"));
@@ -67,11 +68,12 @@ const Dashboard = () => {
   const [isRefreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState(false);
   const [portfolioValue, setPortfolioValue] = useState(localPortfolioValue);
+  const [lastUpdated, setlastUpdated] = useState(new Date().toDateString());
 
   useEffect(() => {
     if (!cryptoData.length) {
       // GetCryptoData();
-      fetchTransactions();
+      // fetchTransactions();
       fetchCoinsData();
       // fetchHistoricData(days);
       if (!localGraphData || localGraphData.length == 0) {
@@ -100,10 +102,11 @@ const Dashboard = () => {
   const handleRefresh = () => {
     setRefreshing(true);
     axios
-      .get(APP_URL + "getcurrentvalue", { headers: headers })
+      .get(APP_URL + "getupdate", { headers: headers })
       .then((response) => {
         console.log(response);
         handleProftfolio();
+        fetchTransactionsByTime(1);
       })
       .catch((err) => {
         console.log("err: ", err);
@@ -112,7 +115,7 @@ const Dashboard = () => {
       });
   };
   const handleProftfolio = () => {
-    setRefreshing(true);
+    // setRefreshing(true);
     axios
       .get(APP_URL + "getportfoliodata", { headers: headers })
       .then((response) => {
@@ -142,35 +145,34 @@ const Dashboard = () => {
     // let reqData = Object.values(dummyData.totalCurrentValue).map((item) =>
     //   item.prices.slice(-100)
     // );
+    let lastUpdated = dummyData.lastUpdated;
     let reqKeys = Object.keys(dummyData.holdings);
-    // console.log(Object.values(dummyData.totalCurrentValue));
+    console.log(Object.values(dummyData.totalCurrentValue));
     let pricesLength = Object.values(dummyData.totalCurrentValue).map(
-      (item) => item.prices.length
+      (item) => item.length
     );
 
     const min = Math.min(...pricesLength);
     let array = [];
     for (let index = 0; index < min; index++) {
       let sum = 0;
-      for (let a = 0; a < reqKeys.length; a++) {
+      for (const key in reqKeys) {
         sum =
           sum +
-          dummyData.totalCurrentValue[reqKeys[a]].prices[index][1] *
-            (dummyData.holdings[reqKeys[a]]
-              ? dummyData.holdings[reqKeys[a]]
+          dummyData.totalCurrentValue[reqKeys[key]][index][1] *
+            (dummyData.holdings[reqKeys[key]]
+              ? dummyData.holdings[reqKeys[key]]
               : 0);
 
         // sum = sum + reqData[a][index][1];
       }
       array.push([
-        dummyData.totalCurrentValue[reqKeys[reqKeys.length - 1]].prices[
-          index
-        ][0],
+        dummyData.totalCurrentValue[reqKeys[reqKeys.length - 1]][index][0],
         sum,
       ]);
     }
     // setSum(newReqObj[moment().format("DD-MM-YYYY")]);
-
+    setlastUpdated(lastUpdated);
     setGraphData(array);
     setIsLoading(false);
     localStorage.setItem("setGraphData", JSON.stringify(array));
@@ -206,8 +208,8 @@ const Dashboard = () => {
         }
       )
       .then((response) => {
+        console.log("gettransactionbyweek", response);
         totalCostData(response.data);
-        // console.log("setTransactionData", response);
       })
       .catch((err) => console.log("err: ", err));
 
@@ -323,7 +325,12 @@ const Dashboard = () => {
     console.log("holdingsObj", holdingsObj);
   };
 
-  // console.log("array", array);
+  console.log("graphData", graphData);
+  const isAuthenticated = token;
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" />;
+  }
+
   return (
     <SidebarWithHeader>
       <Flex>
@@ -337,23 +344,24 @@ const Dashboard = () => {
                 There was an error in refreshing, please wait
               </Alert>
             )}
-
-            <Button
-              isLoading={isRefreshing}
-              loadingText="Loading"
-              colorScheme="teal"
-              variant="outline"
-              spinnerPlacement="start"
-              style={{ marginRight: "1em" }}
-              onClick={() => handleRefresh()}
-            >
-              <IconButton
-                size="lg"
-                variant="ghost"
-                aria-label="open menu"
-                icon={<RepeatIcon />}
-              />
-            </Button>
+            <div className={"float"}>
+              <Button
+                isLoading={isRefreshing}
+                loadingText="Updating will take several minutes please wait"
+                colorScheme="teal"
+                variant="outline"
+                spinnerPlacement="start"
+                style={{ marginRight: "1em" }}
+                onClick={() => handleRefresh()}
+              >
+                <IconButton
+                  size="lg"
+                  variant="ghost"
+                  aria-label="open menu"
+                  icon={<RepeatIcon />}
+                />
+              </Button>
+            </div>
             <Flex>
               <Select placeholder="Zebpay" size="lg" mr={5}>
                 {/* <option value="wazirx">Wazirx</option> */}
@@ -431,6 +439,18 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
+            <div
+              style={{
+                display: "flex",
+                marginTop: 20,
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              <p>
+                Last Updated: {moment(lastUpdated).format("DD-MM-YYYY, h:mm a")}
+              </p>
+            </div>
             <Box bg={"white"} flex="1">
               <Line
                 data={{
@@ -448,7 +468,7 @@ const Dashboard = () => {
                   datasets: [
                     {
                       type: "line",
-                      // backgroundColor: "#5AC53B",
+                      backgroundColor: "#5AC53B",
                       tension: 0,
                       borderColor: "#5AC53B",
                       // borderColor: "#23E33E",
@@ -460,12 +480,16 @@ const Dashboard = () => {
                       pointHoverBorderWidth: 4,
                       pointHoverRadius: 6,
                       data: graphData.map((data) => data[1]),
-                      label: `Price in ${currency}`,
                       // backgroundColor:
                       //   "linear-gradient(180deg, #23E33E -67.46%, rgba(255, 255, 255, 0.0001) 69.63%)",
+                      label: `Price in  ${currency}`,
                     },
                   ],
+
                   options: {
+                    interaction: {
+                      mode: "index",
+                    },
                     responsive: true,
                     legend: {
                       display: false,
@@ -481,12 +505,77 @@ const Dashboard = () => {
                         radius: 0,
                       },
                     },
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: (ctx) =>
+                          "Point Style: " +
+                          ctx.chart.data.datasets[0].pointStyle,
+                      },
+                      legend: {
+                        display: false,
+                      },
+                      tooltip: {
+                        displayColors: false,
+                        backgroundColor: "blue",
+                        titleFontColor: "blue",
+                        bodyFontColor: "blue",
+                      },
+                    },
                     maintainAspectRatio: false,
                     tooltips: {
-                      mode: "index",
-                      intersect: false,
-                      callbacks: {},
+                      backgroundColor: "rgba(0,0,0,0.8)",
+                      bodyAlign: "left",
+                      bodyFontColor: "#fff",
+                      bodySpacing: 2,
+                      borderColor: "rgba(0,0,0,0)",
+                      borderWidth: 0,
+                      caretPadding: 2,
+                      caretSize: 5,
+                      cornerRadius: 6,
+                      custom: null,
+                      displayColors: true,
+                      enabled: true,
+                      footerAlign: "left",
+                      footerFontColor: "#fff",
+                      footerFontStyle: "bold",
+                      footerMarginTop: 6,
+                      footerSpacing: 2,
+                      intersect: true,
+                      mode: "nearest",
+                      multiKeyBackground: "#fff",
+                      position: "average",
+                      titleAlign: "left",
+                      titleFontColor: "#fff",
+                      titleFontStyle: "bold",
+                      titleMarginBottom: 6,
+                      titleSpacing: 2,
+                      xPadding: 6,
+                      yPadding: 6,
                     },
+                    // tooltips: {
+                    //   displayColors: false,
+                    //   backgroundColor: "white",
+                    //   titleFontColor: "blue",
+                    //   mode: "index",
+                    //   intersect: false,
+                    //   callbacks: {
+                    //     title: function (item, everything) {
+                    //       let xLabel = item.xLabel;
+                    //       let yLabel = item.yLabel;
+                    //       let label = "Good" + xLabel + " and " + yLabel;
+                    //       console.log("title item", item);
+                    //       return label;
+                    //     },
+                    //     label: function (item, everything) {
+                    //       let xLabel = item.xLabel;
+                    //       let yLabel = item.yLabel;
+                    //       let label = "Good" + xLabel + " and " + yLabel;
+                    //       console.log("label item", item);
+                    //       return label;
+                    //     },
+                    //   },
+                    // },
                     scales: {
                       xAxes: [
                         {
@@ -532,10 +621,14 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
+      <div id="wrapper">
+        <canvas id="canvas">
+          {/* <!-- your chart will be generated here! --> */}
+        </canvas>
+      </div>
       <PortfolioTable
-        holdings={holdings && holdings}
-        coinsLatestPrice={coinsLatestPrice}
+      // holdings={holdings && holdings}
+      // coinsLatestPrice={coinsLatestPrice}
       />
 
       {/* <BarChart chartData={chartData} /> */}

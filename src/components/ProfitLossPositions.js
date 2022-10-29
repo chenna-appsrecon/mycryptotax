@@ -13,9 +13,6 @@ import {
   Box,
   Container,
   Center,
-  HStack,
-  Icon,
-  Square,
   Text,
   useColorModeValue as mode,
   VStack,
@@ -26,23 +23,50 @@ import axios from "axios";
 import FileUpload from "./FileUpload";
 import SidebarWithHeader from "./SideNavBar";
 import Dropzone from "./Dropzone";
-import { APP_URL, headerKeys } from "../constants";
+import { APP_URL } from "../constants";
 import { headers } from "../api";
-
-export const Transactions = () => {
+const headerKeys = [
+  "securityName",
+  "quantity",
+  "feePaidIn",
+  "tradeType",
+  "platform",
+  "transactionDate",
+  "grossAmount",
+  "costBasis",
+  "currentValue",
+  "gain",
+  // "difference",
+  "TDS",
+  // "expiryDate",
+  // "optionStrike",
+  // "optionType",
+  // "settlementDate",
+  // "serviceTax",
+  // "stt",
+  // "fees",
+  // "otherCharges",
+  // "fileRef",
+];
+export const ProfitLossTransactions = () => {
   const [array, setArray] = useState([]);
   // const headerKeys = Object.keys(Object.assign({}, ...array));
 
-  const fetchTransactions = () => {
+  const fetchPLTransactions = () => {
     axios
-      .get(APP_URL + "gettransaction", { headers: headers })
+      .post(
+        APP_URL + "getprofitlossposition",
+        {
+          parameter: "zebpay",
+        },
+        { headers: headers }
+      )
       .then((response) => {
-        setArray(response.data);
-        // console.log("response", response);
+        setArray(response.data.profitLossTransactions);
+        console.log("getprofitlossposition: ", response);
       })
       .catch((err) => console.log("err: ", err));
   };
-
   const downloadCSV = (csvStr) => {
     var hiddenElement = document.createElement("a");
     // hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvStr);
@@ -77,7 +101,7 @@ export const Transactions = () => {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    fetchPLTransactions();
   }, []);
 
   return (
@@ -128,7 +152,15 @@ export const Transactions = () => {
                   {array &&
                     array.length > 0 &&
                     headerKeys.map((key, i) => {
-                      return <Th key={i}>{key}</Th>;
+                      if (key == "gain") {
+                        return (
+                          <Th style={{ fontWeight: "bold" }} key={i}>
+                            {"Gains/Loss"}
+                          </Th>
+                        );
+                      } else {
+                        return <Th key={i}>{key}</Th>;
+                      }
                     })}
                 </Tr>
               </Thead>

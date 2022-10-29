@@ -13,7 +13,7 @@ export const headerKeys = [
   "grossAmount",
   "costBasis",
   "currentValue",
-  "difference",
+  // "difference",
   "TDS",
   // "expiryDate",
   // "optionStrike",

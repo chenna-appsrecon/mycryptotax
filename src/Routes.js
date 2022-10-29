@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  redirect,
 } from "react-router-dom";
 import {
   Chart as ChartJS,
@@ -32,6 +33,7 @@ import { Transactions } from "./components/Transactions";
 import { SourceUpload } from "./components/SourceUpload";
 import CoinDetails from "./components/CoinDetails";
 import WalletApp from "./components/Wallet";
+import { ProfitLossTransactions } from "./components/ProfitLossPositions";
 
 const SidebarWithHeader = lazy(() => import("./components/SideNavBar"));
 // const LoginPage = lazy(() => import("./Auth/SignIn"));
@@ -75,9 +77,11 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+let token = localStorage.getItem("token");
+
 const App = () => {
-  const isAuthenticated = true;
-  //   const isAuthenticated = getToken();
+  // const isAuthenticated = true;
 
   return (
     <Router>
@@ -98,6 +102,10 @@ const App = () => {
           <Route path="/signup" element={<Register />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route
+            path="/profitLosstransactions"
+            element={<ProfitLossTransactions />}
+          />
           <Route path="/fileUpload" element={<SourceUpload />} />
           <Route path="/coindetails/:id/:quantity" element={<CoinDetails />} />
 
