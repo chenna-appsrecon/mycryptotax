@@ -27,15 +27,24 @@ import FileUpload from "./FileUpload";
 import SidebarWithHeader from "./SideNavBar";
 import Dropzone from "./Dropzone";
 import { APP_URL, headerKeys } from "../constants";
-import { headers } from "../api";
+// import { headers } from "../api";
+
+const headers = {
+  "Content-Type": "application/json",
+};
 
 export const Transactions = () => {
+  let token = localStorage.getItem("token");
+
   const [array, setArray] = useState([]);
+
   // const headerKeys = Object.keys(Object.assign({}, ...array));
 
   const fetchTransactions = () => {
     axios
-      .get(APP_URL + "gettransaction", { headers: headers })
+      .get(APP_URL + "gettransactions", {
+        headers: { ...headers, "x-access-token": token },
+      })
       .then((response) => {
         setArray(response.data);
         // console.log("response", response);
@@ -82,7 +91,8 @@ export const Transactions = () => {
 
   return (
     <SidebarWithHeader>
-      <Flex justifyContent={"flex-end"}>
+      <Flex justifyContent={"space-between"} alignItems={""}>
+        <Text fontSize="3xl"> All Transactions list</Text>
         <Button
           mb={6}
           colorScheme="blue"

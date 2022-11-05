@@ -53,8 +53,8 @@ const WalletApp = () => {
           <Box padding="4" maxW="md">
             You can connect your wallet's here
           </Box>
-          <Box padding="4" maxW="md">
-            Coming soon...
+          <Box padding="4" maxW="md" fontSize={"20"} fontWeight={"bold"}>
+            Coming soon ...
           </Box>
           {/* <Box padding="4" bg="" color="black" maxW="md">
             <Button

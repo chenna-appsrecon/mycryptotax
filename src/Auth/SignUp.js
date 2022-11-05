@@ -65,7 +65,9 @@ function SignUp() {
       .then((response) => {
         if (response.token) {
           localStorage.setItem("token", response.token);
-          handleMiddleWareLogin(response.token);
+          setIsLoading(false);
+          navigate("/fileUpload");
+          // handleMiddleWareLogin(response.token);
         }
       })
       .catch((e) => console.log(e));

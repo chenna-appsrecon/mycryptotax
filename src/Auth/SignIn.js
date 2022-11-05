@@ -13,6 +13,8 @@ import {
   Switch,
   Text,
   useColorModeValue,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 // Assets
 import signInImage from "../assets/img/signInImage.png";
@@ -28,6 +30,7 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const handleEmailInputChange = (e) => setEmail(e.target.value);
   const handlePasswordInputChange = (e) => setPassword(e.target.value);
 
@@ -35,6 +38,7 @@ function SignIn() {
 
   const handleLogin = () => {
     // setMessage("");
+    setError("");
     setIsLoading(true);
     fetch(APP_URL + "login", {
       method: "POST",
@@ -53,13 +57,19 @@ function SignIn() {
           setTimeout(() => {
             setIsLoading(false);
             navigate("/dashboard");
-          }, 1500);
+          }, 3000);
         } else {
           console.log("No Token: ", response);
+          setIsLoading(false);
+          setError("err");
         }
-        return response;
+        // return response;
       })
-      .catch((e) => console.log(e));
+      .catch((err) => {
+        console.log(err);
+        setIsLoading(false);
+        setError(err);
+      });
     // if (token) {
     //   console.log("token", token);
     //   // setLoading(false);
@@ -187,8 +197,15 @@ function SignIn() {
                 </Link>
               </Text>
             </Flex>
+            {error && (
+              <Alert status="error" variant="subtle" mb={5}>
+                <AlertIcon />
+                Something went wrong, please try later
+              </Alert>
+            )}
           </Flex>
         </Flex>
+
         {/* <Box
           display={{ base: "none", md: "block" }}
           overflowX="hidden"

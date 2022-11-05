@@ -97,7 +97,7 @@ function FileUpload() {
     axios
       .post(APP_URL + "upload", formData, { headers: headers })
       .then((response) => {
-        // console.log("response", response);
+        console.log("response", response);
         setDataUploaded(true);
         // setLoading(false);
         handleProftfolio();
@@ -113,11 +113,16 @@ function FileUpload() {
   };
   const handleProftfolio = () => {
     axios
-      .get(APP_URL + "getportfoliodata", { headers: headers })
+      .post(
+        APP_URL + "getportfoliodata",
+        { platform: value },
+        { headers: headers }
+      )
       .then((response) => {
         console.log(response);
         setLoading(false);
         onOpen();
+        localStorage.removeItem("setGraphData");
         setTimeout(() => {
           navigate("/transactions");
         }, 3000);

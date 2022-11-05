@@ -57,7 +57,10 @@ export const PageHeader = ({ portfolioValue }) => {
         <Stack spacing="1">
           <Text fontSize="lg" fontWeight="medium">
             <span style={{ fontSize: "1.5em" }}>
-              <b>{"Rs." + portfolioValue}</b>
+              <b>
+                {"Rs." +
+                  `${portfolioValue ? portfolioValue : "Calculating..."}`}
+              </b>
             </span>
           </Text>
           <Text color="muted" fontSize="sm">

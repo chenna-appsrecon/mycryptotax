@@ -32,10 +32,10 @@ const headerKeys = [
   "tradeType",
   "platform",
   "transactionDate",
+  "gain",
   "grossAmount",
   "costBasis",
   "currentValue",
-  "gain",
   // "difference",
   "TDS",
   // "expiryDate",
@@ -106,7 +106,8 @@ export const ProfitLossTransactions = () => {
 
   return (
     <SidebarWithHeader>
-      <Flex justifyContent={"flex-end"}>
+      <Flex justifyContent={"space-between"} alignItems={""}>
+        <Text fontSize="3xl">All Profit loss positions list</Text>
         <Button
           mb={6}
           colorScheme="blue"
@@ -172,11 +173,33 @@ export const ProfitLossTransactions = () => {
                       <Tr key={i}>
                         {headerKeys.map((val, i) => {
                           if (val == "gain") {
-                            return (
-                              <Td style={{ fontWeight: "bold" }} key={i}>
-                                {rowData[val]}
-                              </Td>
-                            );
+                            if (parseInt(rowData[val]) < 0) {
+                              return (
+                                <Td
+                                  style={{
+                                    color: "#FF0000",
+                                    fontWeight: "bold",
+                                  }}
+                                  key={i}
+                                >
+                                  {parseFloat(rowData[val]).toFixed(2)}
+                                </Td>
+                              );
+                            } else if (parseInt(rowData[val]) > 0) {
+                              return (
+                                <Td
+                                  style={{
+                                    color: "#5AC53B",
+                                    fontWeight: "bold",
+                                  }}
+                                  key={i}
+                                >
+                                  {parseFloat(rowData[val]).toFixed(2)}
+                                </Td>
+                              );
+                            } else {
+                              return <Td key={i}>{rowData[val]}</Td>;
+                            }
                           } else {
                             return <Td key={i}>{rowData[val]}</Td>;
                           }

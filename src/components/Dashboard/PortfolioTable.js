@@ -25,7 +25,6 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { APP_URL } from "../../constants";
-import { headers } from "../../api";
 let headerKeys = [
   "Asset",
   "Holdings",
@@ -35,7 +34,12 @@ let headerKeys = [
   "Current Value",
 ];
 
+const headers = {
+  "Content-Type": "application/json",
+};
+
 const PortfolioTable = () => {
+  let token = localStorage.getItem("token");
   const [array, setArray] = useState([]);
   const navigate = useNavigate();
 
@@ -45,7 +49,11 @@ const PortfolioTable = () => {
 
   const getHoldingsDetailsFromAPI = () => {
     axios
-      .get(APP_URL + "getportfoliodata", { headers: headers })
+      .post(
+        APP_URL + "getportfoliodata",
+        { platform: "zebpay" },
+        { headers: { ...headers, "x-access-token": token } }
+      )
       .then((response) => {
         console.log("response", response);
         calculatingHoldings(response.data);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
+import CanvasJSReact from "../canvasjs.react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import moment from "moment";
@@ -66,17 +67,31 @@ const CoinDetails = () => {
   const [currency, setCurrency] = useState("INR");
   const [symbol, setSymbol] = useState("₹");
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [canvasOptions, setCanvasOptions] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  // const [isRefreshing, setRefreshing] = useState(false);
+  var CanvasJS = CanvasJSReact.CanvasJS;
+  var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
   const fetchHistoricData = async (days) => {
     setDays(days);
     const { data } = await axios.get(
       HistoricalChart(symbolDetails[id.toLowerCase()].id, days, currency)
     );
-    setHistoricData(data.prices);
+    // setHistoricData(data.prices);
+
+    formatDatainto(data.prices, days);
     let res = [...data.prices].reverse();
     setSum(res[0][1] * quantity);
     setCurrentPrice(res[0][1]);
+    setIsLoading(false);
     setflag(true);
+  };
+  const formatDatainto = (historicData, days) => {
+    const data = historicData.map((coin) => {
+      return { x: new Date(coin[0]), y: coin[1] * quantity };
+    });
+    returnCanvasData(data, days);
   };
 
   const downloadCSV = (csvStr) => {
@@ -86,6 +101,42 @@ const CoinDetails = () => {
     hiddenElement.target = "_blank";
     hiddenElement.download = "MyCryptoTaxDetails.csv";
     hiddenElement.click();
+  };
+  const returnCanvasData = (array, day) => {
+    let reqCanvasData = {
+      animationEnabled: true,
+      theme: "light2",
+      title: {
+        text: "Portfolio data showing in graph",
+      },
+      axisX: {
+        valueFormatString: day === 1 ? "DD MMM HH:mm" : "DD MMM",
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true,
+        },
+      },
+      axisY: {
+        title: "Closing Price (in INR)",
+        // valueFormatString: "€##0.00",
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true,
+          labelFormatter: function (e) {
+            return "₹" + CanvasJS.formatNumber(e.value, "##0.00");
+          },
+        },
+      },
+      data: [
+        {
+          type: "area",
+          xValueFormatString: "DD MMM",
+          yValueFormatString: "₹##0.00",
+          dataPoints: array,
+        },
+      ],
+    };
+    setCanvasOptions(reqCanvasData);
   };
 
   const exportCSVFromTable = (columns, csvData) => {
@@ -135,13 +186,13 @@ const CoinDetails = () => {
     axios
       .post(
         APP_URL + "gettransactionbycoin",
-        { coin: `${id}` },
+        { coin: `${id}`, platform: "zebpay" },
         { headers: headers }
       )
       .then((response) => {
         let data = response.data;
         setArray(data);
-        // console.log("reqData", symbol, reqData);
+        console.log("reqData", symbol, data);
       })
       .catch((err) => console.log("err: ", err));
   };
@@ -270,10 +321,12 @@ const CoinDetails = () => {
                 >
                   {chartDays.map((day) => (
                     <Button
+                      isLoading={day.value === days && isLoading}
                       style={{ marginRight: "0.5em" }}
                       key={day.value}
                       onClick={() => {
-                        setflag(false);
+                        // setflag(false);
+                        setIsLoading(true);
                         updateChartData(day.value);
                       }}
                       selected={day.value === days}
@@ -284,7 +337,13 @@ const CoinDetails = () => {
                 </div>
               </div>
               <Box bg={"white"} flex="1">
-                <Line
+                {canvasOptions && (
+                  <CanvasJSChart
+                    options={canvasOptions}
+                    /* onRef={ref => this.chart = ref} */
+                  />
+                )}
+                {/* <Line
                   data={{
                     elements: { line: { tension: 0 } },
                     labels: historicData.map((coin) => {
@@ -376,7 +435,7 @@ const CoinDetails = () => {
                     //   },
                     // },
                   }}
-                />
+                /> */}
               </Box>
             </div>
           )}
@@ -425,6 +484,7 @@ const CoinDetails = () => {
               {/* <TableCaption>Preview Data Here</TableCaption> */}
               <Thead>
                 <Tr>
+                  <Th>Symbol</Th>
                   {array &&
                     array.length > 0 &&
                     headerKeys.map((key, i) => {
@@ -438,6 +498,12 @@ const CoinDetails = () => {
                   array.map((rowData, i) => {
                     return (
                       <Tr key={i}>
+                        <Td>
+                          <Image
+                            src={coinData && coinData?.image?.small}
+                            alt={coinData?.name}
+                          />
+                        </Td>
                         {headerKeys.map((val, i) => (
                           <Td key={i}>{rowData[val]}</Td>
                         ))}

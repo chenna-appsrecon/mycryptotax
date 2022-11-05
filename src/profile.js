@@ -19,10 +19,15 @@ import {
 } from "@chakra-ui/react";
 import { SmallCloseIcon } from "@chakra-ui/icons";
 import { APP_URL } from "./constants";
-import { headers } from "./api";
+// import { headers } from "./api";
 import SidebarWithHeader from "./components/SideNavBar";
 
+const headers = {
+  "Content-Type": "application/json",
+};
+
 export default function UserProfileEdit() {
+  let token = localStorage.getItem("token");
   const [data, setData] = useState("");
   useEffect(() => {
     handleProfile();
@@ -34,7 +39,7 @@ export default function UserProfileEdit() {
     // setIsLoading(true);
     fetch(APP_URL + "profile", {
       method: "GET",
-      headers: headers,
+      headers: { ...headers, "x-access-token": token },
     })
       .then((res) => res.json())
       .then((response) => {

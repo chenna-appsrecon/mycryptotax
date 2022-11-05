@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import CanvasJSReact from "../../canvasjs.react";
 import { Line } from "react-chartjs-2";
 import { Navigate, useParams } from "react-router-dom";
 import moment from "moment";
@@ -21,7 +22,7 @@ import {
 import { RepeatIcon } from "@chakra-ui/icons";
 import SidebarWithHeader from "../SideNavBar";
 import TableComponent from "../Tables";
-import { CoinList, headers, HistoricalChart } from "../../api";
+import { CoinList, HistoricalChart } from "../../api";
 import { APP_URL } from "../../constants";
 // import { BarChart } from "./BarChart";
 import { Card } from "../Card";
@@ -32,7 +33,12 @@ import { symbolDetails } from "../../Coindeckodetails";
 import PortfolioTable from "./PortfolioTable";
 import { chartDays } from "../Chartdays";
 import { FaTractor } from "react-icons/fa";
+import { keyboard } from "@testing-library/user-event/dist/keyboard";
 const API_URL = "https://stockpalapi.glassball.app";
+
+const headers = {
+  "Content-Type": "application/json",
+};
 
 let headerKeys = [
   "Asset",
@@ -41,11 +47,73 @@ let headerKeys = [
   "Holdings",
   "Difference",
 ];
-let token = localStorage.getItem("token");
+// let token = localStorage.getItem("token");
+// console.log("token", token);
+
+var CanvasJS = CanvasJSReact.CanvasJS;
+var CanvasJSChart = CanvasJSReact.CanvasJSChart;
+
+const CanvOptions = {
+  animationEnabled: true,
+  theme: "light2",
+  title: {
+    text: "Portfolio data showing in graph",
+  },
+  axisX: {
+    valueFormatString: "DD MMM",
+    crosshair: {
+      enabled: true,
+      snapToDataPoint: true,
+    },
+  },
+  axisY: {
+    title: "Closing Price (in INR)",
+    // valueFormatString: "€##0.00",
+    crosshair: {
+      enabled: true,
+      snapToDataPoint: true,
+      labelFormatter: function (e) {
+        return "₹" + CanvasJS.formatNumber(e.value, "##0.00");
+      },
+    },
+  },
+  data: [
+    {
+      type: "area",
+      xValueFormatString: "DD MMM",
+      yValueFormatString: "₹##0.00",
+      dataPoints: [
+        { x: new Date("2018-03-01"), y: 85.3 },
+        { x: new Date("2018-03-02"), y: 83.97 },
+        { x: new Date("2018-03-05"), y: 83.49 },
+        { x: new Date("2018-03-06"), y: 84.16 },
+        { x: new Date("2018-03-07"), y: 84.86 },
+        { x: new Date("2018-03-08"), y: 84.97 },
+        { x: new Date("2018-03-09"), y: 85.13 },
+        { x: new Date("2018-03-12"), y: 85.71 },
+        { x: new Date("2018-03-13"), y: 84.63 },
+        { x: new Date("2018-03-14"), y: 84.17 },
+        { x: new Date("2018-03-15"), y: 85.12 },
+        { x: new Date("2018-03-16"), y: 85.86 },
+        { x: new Date("2018-03-19"), y: 85.17 },
+        { x: new Date("2018-03-20"), y: 85.99 },
+        { x: new Date("2018-03-21"), y: 86.1 },
+        { x: new Date("2018-03-22"), y: 85.33 },
+        { x: new Date("2018-03-23"), y: 84.18 },
+        { x: new Date("2018-03-26"), y: 85.21 },
+        { x: new Date("2018-03-27"), y: 85.81 },
+        { x: new Date("2018-03-28"), y: 85.56 },
+        { x: new Date("2018-03-29"), y: 88.15 },
+      ],
+    },
+  ],
+};
 
 const Dashboard = () => {
   const localGraphData = JSON.parse(localStorage.getItem("setGraphData"));
   const localPortfolioValue = localStorage.getItem("setPortfolioValue");
+  let token = localStorage.getItem("token");
+
   const { id, quantity } = useParams();
   const [flag, setflag] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -69,20 +137,21 @@ const Dashboard = () => {
   const [refreshError, setRefreshError] = useState(false);
   const [portfolioValue, setPortfolioValue] = useState(localPortfolioValue);
   const [lastUpdated, setlastUpdated] = useState(new Date().toDateString());
+  const [canvasOptions, setCanvasOptions] = useState("");
+  const [coinsData, setCoins] = useState();
 
   useEffect(() => {
     if (!cryptoData.length) {
-      // GetCryptoData();
-      // fetchTransactions();
-      fetchCoinsData();
-      // fetchHistoricData(days);
-      if (!localGraphData || localGraphData.length == 0) {
-        fetchTransactionsByTime(1);
-      }
-      if (!localPortfolioValue) {
-        handleProftfolio();
-      }
-      // totalCostData(dummyData);
+      fetchTransactionsByTime(1);
+      handleProftfolio();
+      // if (!localGraphData || localGraphData.length == 0) {
+      //   fetchTransactionsByTime(1);
+      // } else {
+      //   totalCostData(localGraphData, 1);
+      // }
+      // if (!localPortfolioValue) {
+      //   handleProftfolio();
+      // }
     }
   }, []);
 
@@ -99,10 +168,20 @@ const Dashboard = () => {
     });
     // console.log("Coingecko", obj);
   };
+  const fetchCoins = async () => {
+    // setLoading(true);
+    const { data } = await axios.get(CoinList(currency));
+    console.log("coinsData", data);
+
+    setCoins(data);
+    // setLoading(false);
+  };
   const handleRefresh = () => {
     setRefreshing(true);
     axios
-      .get(APP_URL + "getupdate", { headers: headers })
+      .get(APP_URL + "getupdate", {
+        headers: { ...headers, "x-access-token": token },
+      })
       .then((response) => {
         console.log(response);
         handleProftfolio();
@@ -117,7 +196,11 @@ const Dashboard = () => {
   const handleProftfolio = () => {
     // setRefreshing(true);
     axios
-      .get(APP_URL + "getportfoliodata", { headers: headers })
+      .post(
+        APP_URL + "getportfoliodata",
+        { platform: "zebpay" },
+        { headers: { ...headers, "x-access-token": token } }
+      )
       .then((response) => {
         console.log(response);
         calculatePortFolioValue(response.data);
@@ -136,94 +219,116 @@ const Dashboard = () => {
     );
     setPortfolioValue(sumWithInitial);
     setRefreshing(false);
+    // symbolDetails[item.securityName.toLowerCase()].id
     localStorage.setItem("setPortfolioValue", sumWithInitial);
     console.log("sumWithInitial", sumWithInitial);
   };
   let newReqObj = {};
 
-  const totalCostData = (dummyData) => {
+  const totalCostData = (dummyData, day) => {
     // let reqData = Object.values(dummyData.totalCurrentValue).map((item) =>
     //   item.prices.slice(-100)
     // );
     let lastUpdated = dummyData.lastUpdated;
-    let reqKeys = Object.keys(dummyData.holdings);
+    let reqKeys = Object.keys(dummyData.totalCurrentValue);
     console.log(Object.values(dummyData.totalCurrentValue));
     let pricesLength = Object.values(dummyData.totalCurrentValue).map(
       (item) => item.length
     );
 
     const min = Math.min(...pricesLength);
+    const minValueIndex = pricesLength.indexOf(min);
+
     let array = [];
+    console.log("reqKeys", reqKeys);
     for (let index = 0; index < min; index++) {
       let sum = 0;
-      for (const key in reqKeys) {
+      for (let a = 0; a < reqKeys.length; a++) {
+        // console.log(reqKeys[a]);
+        // console.log(dummyData.totalCurrentValue[reqKeys[a]]);
+        // console.log(dummyData.totalCurrentValue[reqKeys[a]][index][1]);
         sum =
           sum +
-          dummyData.totalCurrentValue[reqKeys[key]][index][1] *
-            (dummyData.holdings[reqKeys[key]]
-              ? dummyData.holdings[reqKeys[key]]
+          dummyData.totalCurrentValue[reqKeys[a]][index][1] *
+            (dummyData.holdings[reqKeys[a]]
+              ? dummyData.holdings[reqKeys[a]]
               : 0);
-
         // sum = sum + reqData[a][index][1];
       }
-      array.push([
-        dummyData.totalCurrentValue[reqKeys[reqKeys.length - 1]][index][0],
-        sum,
-      ]);
+
+      array.push({
+        x: new Date(
+          dummyData.totalCurrentValue[reqKeys[minValueIndex]][index][0]
+        ),
+        y: sum,
+      });
     }
     // setSum(newReqObj[moment().format("DD-MM-YYYY")]);
     setlastUpdated(lastUpdated);
     setGraphData(array);
+    returnCanvasData(array, day);
+    if (isRefreshing) {
+      setRefreshing(false);
+    }
     setIsLoading(false);
     localStorage.setItem("setGraphData", JSON.stringify(array));
     setflag(true);
   };
 
-  const fetchHistoricData = async (days) => {
-    const { data } = await axios.get(CoinList(currency));
-    setflag(true);
-
-    setHistoricData(data);
-  };
-
-  const fetchTransactions = () => {
-    axios
-      .get(APP_URL + "gettransaction", { headers: headers })
-      .then((response) => {
-        setTransactionData(response.data);
-        getCryptoDetails(response.data);
-        console.log("setTransactionData====", response);
-      })
-      .catch((err) => console.log("err: ", err));
+  const returnCanvasData = (array, day) => {
+    let reqCanvasData = {
+      animationEnabled: true,
+      theme: "light2",
+      title: {
+        text: "Portfolio data showing in graph",
+      },
+      axisX: {
+        valueFormatString: day === 1 ? "DD MMM HH:mm" : "DD MMM",
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true,
+        },
+      },
+      axisY: {
+        title: "Closing Price (in INR)",
+        // valueFormatString: "€##0.00",
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true,
+          labelFormatter: function (e) {
+            return "₹" + CanvasJS.formatNumber(e.value, "##0.00");
+          },
+        },
+      },
+      data: [
+        {
+          type: "area",
+          xValueFormatString: "DD MMM",
+          yValueFormatString: "₹##0.00",
+          dataPoints: array,
+        },
+      ],
+    };
+    setCanvasOptions(reqCanvasData);
   };
 
   const fetchTransactionsByTime = (day) => {
     // setflag(false);
     axios
       .post(
-        APP_URL + "gettransactionbyweek",
+        APP_URL + "gettransactionbyday",
         { parameter: day },
         {
-          headers: headers,
+          headers: { ...headers, "x-access-token": token },
         }
       )
       .then((response) => {
-        console.log("gettransactionbyweek", response);
-        totalCostData(response.data);
+        console.log("gettransactionbyday", response);
+        totalCostData(response.data, day);
       })
       .catch((err) => console.log("err: ", err));
 
     // totalCostData(dummyData);
-  };
-
-  const fetchCoinsData = () => {
-    axios
-      .get(APP_URL + "getcoinsdata", { headers: headers })
-      .then((response) => {
-        // console.log("response", response);
-        setCoinsLatestPrice(response.data);
-      })
-      .catch((err) => console.log("err: ", err));
   };
 
   // let details = {};
@@ -321,13 +426,20 @@ const Dashboard = () => {
     //   });
     setHoldings(holdingsObj);
 
-    console.log("assetValue", assetValue);
-    console.log("holdingsObj", holdingsObj);
+    // console.log("assetValue", assetValue);
+    // console.log("holdingsObj", holdingsObj);
   };
 
-  console.log("graphData", graphData);
+  // console.log("graphData", graphData);
   const isAuthenticated = token;
   if (!isAuthenticated) {
+    // const myTimeout = setTimeout(() => {
+    //   if (!isAuthenticated) {
+    //     return <Navigate to="/signin" />;
+    //   } else {
+    //     clearTimeout(myTimeout);
+    //   }
+    // }, 3000);
     return <Navigate to="/signin" />;
   }
 
@@ -347,7 +459,7 @@ const Dashboard = () => {
             <div className={"float"}>
               <Button
                 isLoading={isRefreshing}
-                loadingText="Updating will take several minutes please wait"
+                loadingText="Updating will take a while... please wait"
                 colorScheme="teal"
                 variant="outline"
                 spinnerPlacement="start"
@@ -452,7 +564,14 @@ const Dashboard = () => {
               </p>
             </div>
             <Box bg={"white"} flex="1">
-              <Line
+              {canvasOptions && (
+                <CanvasJSChart
+                  options={canvasOptions}
+                  /* onRef={ref => this.chart = ref} */
+                />
+              )}
+
+              {/* <Line
                 data={{
                   elements: { line: { tension: 0.4 } },
                   labels: graphData.map((coin) => {
@@ -485,147 +604,103 @@ const Dashboard = () => {
                       label: `Price in  ${currency}`,
                     },
                   ],
-
-                  options: {
-                    interaction: {
-                      mode: "index",
-                    },
-                    responsive: true,
+                }}
+                options={{
+                  interaction: {
+                    mode: "index",
+                  },
+                  responsive: true,
+                  legend: {
+                    display: false,
+                  },
+                  // hover: {
+                  //   intersect: false,
+                  // },
+                  // elements: {
+                  //   line: {
+                  //     tension: 0,
+                  //   },
+                  //   point: {
+                  //     radius: 0,
+                  //   },
+                  // },
+                  plugins: {
+                    // title: {
+                    //   display: true,
+                    //   text: (ctx) =>
+                    //     "Point Style: " + ctx.chart.data.datasets[0].pointStyle,
+                    // },
                     legend: {
+                      // positon: "right",
                       display: false,
                     },
-                    hover: {
-                      intersect: false,
-                    },
-                    elements: {
-                      line: {
-                        tension: 0,
-                      },
-                      point: {
-                        radius: 0,
-                      },
-                    },
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: (ctx) =>
-                          "Point Style: " +
-                          ctx.chart.data.datasets[0].pointStyle,
-                      },
-                      legend: {
-                        display: false,
-                      },
-                      tooltip: {
-                        displayColors: false,
-                        backgroundColor: "blue",
-                        titleFontColor: "blue",
-                        bodyFontColor: "blue",
-                      },
-                    },
-                    maintainAspectRatio: false,
-                    tooltips: {
-                      backgroundColor: "rgba(0,0,0,0.8)",
-                      bodyAlign: "left",
-                      bodyFontColor: "#fff",
-                      bodySpacing: 2,
-                      borderColor: "rgba(0,0,0,0)",
-                      borderWidth: 0,
-                      caretPadding: 2,
-                      caretSize: 5,
-                      cornerRadius: 6,
-                      custom: null,
-                      displayColors: true,
-                      enabled: true,
-                      footerAlign: "left",
-                      footerFontColor: "#fff",
-                      footerFontStyle: "bold",
-                      footerMarginTop: 6,
-                      footerSpacing: 2,
-                      intersect: true,
-                      mode: "nearest",
-                      multiKeyBackground: "#fff",
-                      position: "average",
-                      titleAlign: "left",
-                      titleFontColor: "#fff",
-                      titleFontStyle: "bold",
-                      titleMarginBottom: 6,
-                      titleSpacing: 2,
-                      xPadding: 6,
-                      yPadding: 6,
-                    },
-                    // tooltips: {
-                    //   displayColors: false,
-                    //   backgroundColor: "white",
-                    //   titleFontColor: "blue",
-                    //   mode: "index",
-                    //   intersect: false,
-                    //   callbacks: {
-                    //     title: function (item, everything) {
-                    //       let xLabel = item.xLabel;
-                    //       let yLabel = item.yLabel;
-                    //       let label = "Good" + xLabel + " and " + yLabel;
-                    //       console.log("title item", item);
-                    //       return label;
-                    //     },
-                    //     label: function (item, everything) {
-                    //       let xLabel = item.xLabel;
-                    //       let yLabel = item.yLabel;
-                    //       let label = "Good" + xLabel + " and " + yLabel;
-                    //       console.log("label item", item);
-                    //       return label;
-                    //     },
-                    //   },
-                    // },
-                    scales: {
-                      xAxes: [
-                        {
-                          type: "time",
-                          time: {
-                            format: "MM/DD/YY",
-                            tooltipFormat: "ll",
-                          },
-                          ticks: {
-                            display: false,
-                          },
+                    tooltip: {
+                      displayColors: false,
+                      backgroundColor: "#ffffff",
+                      titleFontColor: "black",
+                      titleFontSize: "black",
+                      titleColor: "black",
+                      bodyFontColor: "blue",
+                      bodyFontSize: "30",
+                      bodyColor: "green",
+                      // borderColor: "green",
+                      borderWidth: "1",
+                      padding: 30,
+
+                      callbacks: {
+                        // beforeTitle: function (context) {
+                        //   return "beforeTitle";
+                        // },
+                        title: function (context) {
+                          // console.log("context title", context);
+                          return "Time : " + context[0].label;
                         },
-                      ],
-                      yAxes: [
-                        {
-                          gridLines: {
-                            display: false,
-                          },
-                          ticks: {
-                            display: false,
-                          },
-                        },
-                      ],
+                        // label: function (context) {
+                        //   // console.log("context title", context);
+                        //   return "Time : " + context[0].label;
+                        // },
+                        // afterTitle: function (context) {
+                        //   return "afterTitle";
+                        // },
+                        // afterLabel: function (context) {
+                        //   return "Time : " + "context[0].label";
+                        // },
+                      },
                     },
                   },
-                  // options: {
-                  //   responsive: true,
-                  //   plugins: {
-                  //     title: {
-                  //       display: true,
-                  //       text: (ctx) =>
-                  //         "Point Style: " +
-                  //         ctx.chart.data.datasets[0].pointStyle,
+                  maintainAspectRatio: false,
+
+                  // scales: {
+                  // xAxes: [
+                  //   {
+                  //     type: "time",
+                  //     time: {
+                  //       format: "MM/DD/YY",
+                  //       tooltipFormat: "ll",
                   //     },
-                  //     legend: {
+                  //     ticks: {
                   //       display: false,
                   //     },
                   //   },
+                  // ],
+                  // yAxes: [
+                  //   {
+                  //     gridLines: {
+                  //       display: false,
+                  //     },
+                  //     ticks: {
+                  //       display: false,
+                  //     },
+                  //   },
+                  // ],
                   // },
                 }}
-              />
+              /> */}
             </Box>
           </div>
         )}
       </div>
-      <div id="wrapper">
-        <canvas id="canvas">
-          {/* <!-- your chart will be generated here! --> */}
-        </canvas>
-      </div>
+
       <PortfolioTable
       // holdings={holdings && holdings}
       // coinsLatestPrice={coinsLatestPrice}
