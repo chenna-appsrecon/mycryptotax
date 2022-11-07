@@ -179,6 +179,10 @@ const CoinDetails = () => {
   }, []);
 
   const updateChartData = (day) => {
+    if (day === days) {
+      return;
+    }
+    setIsLoading(true);
     fetchHistoricData(day);
   };
 
@@ -322,11 +326,21 @@ const CoinDetails = () => {
                   {chartDays.map((day) => (
                     <Button
                       isLoading={day.value === days && isLoading}
-                      style={{ marginRight: "0.5em" }}
+                      style={
+                        day.value === days
+                          ? {
+                              marginRight: "1em",
+                              backgroundColor: "black",
+                              color: "white",
+                            }
+                          : {
+                              marginRight: "1em",
+                            }
+                      }
                       key={day.value}
                       onClick={() => {
                         // setflag(false);
-                        setIsLoading(true);
+
                         updateChartData(day.value);
                       }}
                       selected={day.value === days}

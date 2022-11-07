@@ -156,6 +156,10 @@ const Dashboard = () => {
   }, []);
 
   const updateChartData = (day) => {
+    if (day === days) {
+      return;
+    }
+    setIsLoading(true);
     setDays(day);
     fetchTransactionsByTime(day);
   };
@@ -529,7 +533,6 @@ const Dashboard = () => {
                     key={day.value}
                     onClick={() => {
                       // setNewFlag(false);
-                      setIsLoading(true);
                       updateChartData(day.value);
                     }}
                     isLoading={day.value === days && isLoading}

@@ -29,8 +29,8 @@ let headerKeys = [
   "Asset",
   "Holdings",
   // "Current Price",
-  "Purchased value",
-  "Difference",
+  // "Purchased value",
+  // "Difference",
   "Current Value",
 ];
 

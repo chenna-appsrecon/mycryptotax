@@ -59,7 +59,11 @@ export const PageHeader = ({ portfolioValue }) => {
             <span style={{ fontSize: "1.5em" }}>
               <b>
                 {"Rs." +
-                  `${portfolioValue ? portfolioValue : "Calculating..."}`}
+                  `${
+                    portfolioValue
+                      ? parseFloat(portfolioValue).toFixed(2)
+                      : "Calculating..."
+                  }`}
               </b>
             </span>
           </Text>
