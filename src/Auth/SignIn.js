@@ -61,14 +61,14 @@ function SignIn() {
         } else {
           console.log("No Token: ", response);
           setIsLoading(false);
-          setError("err");
+          setError(response.message);
         }
         // return response;
       })
       .catch((err) => {
         console.log(err);
         setIsLoading(false);
-        setError(err);
+        setError("something went wrong! please try later");
       });
     // if (token) {
     //   console.log("token", token);
@@ -200,7 +200,7 @@ function SignIn() {
             {error && (
               <Alert status="error" variant="subtle" mb={5}>
                 <AlertIcon />
-                Something went wrong, please try later
+                {error}
               </Alert>
             )}
           </Flex>
