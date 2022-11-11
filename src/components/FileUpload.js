@@ -51,7 +51,7 @@ import { Option } from "./Option";
 function FileUpload() {
   const [files, setFile] = useState("");
   const [array, setArray] = useState([]);
-  const [value, setValue] = useState("zebpay");
+  const [value, setValue] = useState("");
   const [isLoading, setLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [dataUploaded, setDataUploaded] = useState(false);
@@ -208,7 +208,7 @@ function FileUpload() {
               value={value}
               onChange={(e) => setValue(e.target.value)}
             >
-              {/* <option value="wazirx">Wazirx</option> */}
+              <option value="wazirx">Wazirx</option>
               <option value="zebpay">Zebpay</option>
             </Select>
             <Square size="10" bg="bg-subtle" borderRadius="lg">

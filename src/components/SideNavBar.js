@@ -39,7 +39,9 @@ import { ReactText } from "react";
 import TableComponent from "./Tables";
 import { APP_URL } from "../constants";
 import axios from "axios";
-import { headers } from "../api";
+const headers = {
+  "Content-Type": "application/json",
+};
 
 const LinkItems = [
   { name: "Dashboard", icon: FiHome, path: "/dashboard" },
@@ -152,11 +154,19 @@ const NavItem = ({ path, icon, children, ...rest }) => {
 };
 
 const MobileNav = ({ onOpen, ...rest }) => {
+  const profileData =
+    localStorage.getItem("profile") &&
+    JSON.parse(localStorage.getItem("profile"));
+  const token = localStorage.getItem("token");
   const [data, setData] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    handleProfile();
+    if (!profileData) {
+      handleProfile();
+    } else {
+      setData(profileData);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -168,17 +178,18 @@ const MobileNav = ({ onOpen, ...rest }) => {
     // setIsLoading(true);
     fetch(APP_URL + "profile", {
       method: "GET",
-      headers: headers,
+      headers: { ...headers, "x-access-token": token },
     })
       .then((res) => res.json())
       .then((response) => {
         setData(response);
-        // if (response.token) {
-        //   localStorage.setItem("token", response.token);
-        //   //   setIsLoading(false);
-        //   //   navigate("/dashboard");
-        // }
-        return response;
+        if (response.isAuth) {
+          localStorage.setItem("profile", JSON.stringify(response));
+          //   setIsLoading(false);
+          //   navigate("/dashboard");
+        }
+        // console.log("profile response", response);
+        // return response;
       })
       .catch((e) => console.log(e));
     // if (token) {

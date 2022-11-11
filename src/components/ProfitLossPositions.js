@@ -16,7 +16,7 @@ import {
   Center,
   Text,
   useColorModeValue as mode,
-  VStack,
+  Select,
   Flex,
   Link,
 } from "@chakra-ui/react";
@@ -27,6 +27,7 @@ import SidebarWithHeader from "./SideNavBar";
 import Dropzone from "./Dropzone";
 import { APP_URL } from "../constants";
 import { headers } from "../api";
+
 const headerKeys = [
   "securityName",
   "quantity",
@@ -52,6 +53,8 @@ const headerKeys = [
 ];
 export const ProfitLossTransactions = () => {
   const [data, setData] = useState([]);
+  const [wholedata, setWholeData] = useState([]);
+  const [value, setValue] = useState("all");
   // const headerKeys = Object.keys(Object.assign({}, ...data));
   const columns = React.useMemo(
     () => [
@@ -114,7 +117,8 @@ export const ProfitLossTransactions = () => {
       )
       .then((response) => {
         setData(response.data.profitLossTransactions);
-        console.log("getprofitlossposition: ", response);
+        setWholeData(response.data.profitLossTransactions);
+        // console.log("getprofitlossposition: ", response);
       })
       .catch((err) => console.log("err: ", err));
   };
@@ -155,23 +159,51 @@ export const ProfitLossTransactions = () => {
     fetchPLTransactions();
   }, []);
 
+  const handleFilter = (platform) => {
+    console.log(platform);
+    let reqData = [...wholedata];
+
+    if (platform !== "all") {
+      let res = reqData.filter((item) => item.platform == platform);
+      setData(res);
+    } else {
+      setData(reqData);
+    }
+  };
+
   const firstPageRows = rows.slice(0, 20);
 
   return (
     <SidebarWithHeader>
       <Flex justifyContent={"space-between"} alignItems={""}>
         <Text fontSize="3xl">All Profit loss positions list</Text>
-        <Button
-          mb={6}
-          colorScheme="blue"
-          mt={4}
-          disabled={!(data && data.length > 0)}
-          onClick={(e) => {
-            exportCSVFromTable(headerKeys, data);
-          }}
-        >
-          Export
-        </Button>
+        <Flex justifyContent={"space-between"} alignItems={"center"}>
+          <Select
+            placeholder="Select Exchange"
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              handleFilter(e.target.value);
+            }}
+            style={{ marginBottom: "0.5em" }}
+          >
+            <option value="all">ALL</option>
+            <option value="wazirx">Wazirx</option>
+            <option value="zebpay">Zebpay</option>
+          </Select>
+          <Button
+            mb={6}
+            marginLeft={3}
+            colorScheme="blue"
+            mt={4}
+            disabled={!(data && data.length > 0)}
+            onClick={(e) => {
+              exportCSVFromTable(headerKeys, data);
+            }}
+          >
+            Export
+          </Button>
+        </Flex>
       </Flex>
       <Box bg={"white"} flex="1" p="6">
         <Box

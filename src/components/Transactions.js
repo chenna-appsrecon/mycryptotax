@@ -18,10 +18,12 @@ import {
   Square,
   Text,
   useColorModeValue as mode,
-  VStack,
+  Select,
   Flex,
   Link,
 } from "@chakra-ui/react";
+import { useTable, useSortBy } from "react-table";
+import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import FileUpload from "./FileUpload";
 import SidebarWithHeader from "./SideNavBar";
@@ -35,9 +37,63 @@ const headers = {
 
 export const Transactions = () => {
   let token = localStorage.getItem("token");
-
+  const [data, setData] = useState([]);
+  const [wholedata, setWholeData] = useState([]);
   const [array, setArray] = useState([]);
-
+  const [value, setValue] = useState("all");
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: "Security Name",
+        accessor: "securityName",
+      },
+      {
+        Header: "Quantity",
+        accessor: "quantity",
+      },
+      {
+        Header: "FeePaidIn",
+        accessor: "feePaidIn",
+      },
+      {
+        Header: "Trade Type",
+        accessor: "tradeType",
+      },
+      {
+        Header: "Transaction Date",
+        accessor: "transactionDate",
+      },
+      {
+        Header: "Platform",
+        accessor: "platform",
+      },
+      {
+        Header: "Gross Amount",
+        accessor: "grossAmount",
+      },
+      // {
+      //   Header: "Cost Basis",
+      //   accessor: "costBasis",
+      // },
+      {
+        Header: "Current Value",
+        accessor: "currentValue",
+      },
+      {
+        Header: "TDS",
+        accessor: "TDS",
+      },
+    ],
+    []
+  );
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable(
+      {
+        columns,
+        data,
+      },
+      useSortBy
+    );
   // const headerKeys = Object.keys(Object.assign({}, ...array));
 
   const fetchTransactions = () => {
@@ -46,7 +102,9 @@ export const Transactions = () => {
         headers: { ...headers, "x-access-token": token },
       })
       .then((response) => {
-        setArray(response.data);
+        setData(response.data);
+        setWholeData(response.data);
+        // setArray(response.data);
         // console.log("response", response);
       })
       .catch((err) => console.log("err: ", err));
@@ -89,21 +147,52 @@ export const Transactions = () => {
     fetchTransactions();
   }, []);
 
+  const handleFilter = (platform) => {
+    console.log(platform);
+    let reqData = [...wholedata];
+
+    if (platform !== "all") {
+      let res = reqData.filter((item) => item.platform == platform);
+      setData(res);
+    } else {
+      setData(reqData);
+    }
+  };
+
+  const firstPageRows = rows.slice(0, 20);
+  // console.log("firstPageRows", firstPageRows);
+
   return (
     <SidebarWithHeader>
-      <Flex justifyContent={"space-between"} alignItems={""}>
+      <Flex justifyContent={"space-between"} alignItems={"center"}>
         <Text fontSize="3xl"> All Transactions list</Text>
-        <Button
-          mb={6}
-          colorScheme="blue"
-          mt={4}
-          disabled={!(array && array.length > 0)}
-          onClick={(e) => {
-            exportCSVFromTable(headerKeys, array);
-          }}
-        >
-          Export
-        </Button>
+        <Flex justifyContent={"space-between"} alignItems={"center"}>
+          <Select
+            placeholder="Select Exchange"
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              handleFilter(e.target.value);
+            }}
+            style={{ marginBottom: "0.5em" }}
+          >
+            <option value="all">ALL</option>
+            <option value="wazirx">Wazirx</option>
+            <option value="zebpay">Zebpay</option>
+          </Select>
+          <Button
+            mb={6}
+            marginLeft={3}
+            colorScheme="blue"
+            mt={4}
+            disabled={!(data && data.length > 0)}
+            onClick={(e) => {
+              exportCSVFromTable(headerKeys, data);
+            }}
+          >
+            Export
+          </Button>
+        </Flex>
       </Flex>
       <Box bg={"white"} flex="1" p="6">
         <Box
@@ -113,7 +202,7 @@ export const Transactions = () => {
           // border="3px dashed currentColor"
           // color={mode("gray.200", "gray.700")}
         >
-          {array.length == 0 && (
+          {data.length == 0 && (
             <Center>
               <Flex
                 direction={"column"}
@@ -131,41 +220,96 @@ export const Transactions = () => {
             </Center>
           )}
           <TableContainer>
-            <Table variant="simple">
-              {/* <TableCaption>Preview Data Here</TableCaption> */}
+            <Table {...getTableProps()} variant="simple">
               <Thead>
-                <Tr>
-                  {array &&
-                    array.length > 0 &&
-                    headerKeys.map((key, i) => {
-                      return <Th key={i}>{key}</Th>;
-                    })}
-                </Tr>
+                {headerGroups.map((headerGroup) => (
+                  <Tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      // Add the sorting props to control sorting. For this example
+                      // we can add them into the header props
+                      <Th
+                        userSelect="none"
+                        {...column.getHeaderProps(
+                          column.getSortByToggleProps()
+                        )}
+                      >
+                        <Flex alignItems="center">
+                          {column.render("Header")}
+                          {/* Add a sort direction indicator */}
+                          {column.isSorted ? (
+                            column.isSortedDesc ? (
+                              <ChevronDownIcon ml={1} w={4} h={4} />
+                            ) : (
+                              <ChevronUpIcon ml={1} w={4} h={4} />
+                            )
+                          ) : (
+                            ""
+                          )}
+                        </Flex>
+                      </Th>
+                    ))}
+                  </Tr>
+                ))}
               </Thead>
-              <Tbody>
-                {array &&
-                  array.length > 0 &&
-                  array.map((rowData, i) => {
+              <Tbody {...getTableBodyProps()}>
+                {firstPageRows.map((row, i) => {
+                  prepareRow(row);
+                  return (
+                    <Tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => {
+                        return (
+                          <Td {...cell.getCellProps()}>
+                            {cell.render("Cell")}
+                          </Td>
+                        );
+                      })}
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+              {/* <Tbody {...getTableBodyProps()}>
+                {data &&
+                  data.length > 0 &&
+                  data.map((rowData, i) => {
                     return (
                       <Tr key={i}>
                         {headerKeys.map((val, i) => {
                           if (val == "gain") {
-                            return (
-                              <Td style={{ fontWeight: "bold" }} key={i}>
-                                {rowData[val]}
-                              </Td>
-                            );
+                            if (parseInt(rowData[val]) < 0) {
+                              return (
+                                <Td
+                                  style={{
+                                    color: "#FF0000",
+                                    fontWeight: "bold",
+                                  }}
+                                  key={i}
+                                >
+                                  {parseFloat(rowData[val]).toFixed(2)}
+                                </Td>
+                              );
+                            } else if (parseInt(rowData[val]) > 0) {
+                              return (
+                                <Td
+                                  style={{
+                                    color: "#5AC53B",
+                                    fontWeight: "bold",
+                                  }}
+                                  key={i}
+                                >
+                                  {parseFloat(rowData[val]).toFixed(2)}
+                                </Td>
+                              );
+                            } else {
+                              return <Td key={i}>{rowData[val]}</Td>;
+                            }
                           } else {
                             return <Td key={i}>{rowData[val]}</Td>;
                           }
                         })}
-                        {/* {keys.map((key) => {
-                      return <Td>{rowData[key]}</Td>;
-                    })} */}
                       </Tr>
                     );
                   })}
-              </Tbody>
+              </Tbody> */}
               {/* <Tfoot>
             <Tr>
               {headerKeys &&

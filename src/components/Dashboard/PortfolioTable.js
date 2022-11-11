@@ -38,7 +38,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const PortfolioTable = () => {
+const PortfolioTable = ({ platform }) => {
   let token = localStorage.getItem("token");
   const [array, setArray] = useState([]);
   const navigate = useNavigate();
@@ -51,11 +51,11 @@ const PortfolioTable = () => {
     axios
       .post(
         APP_URL + "getportfoliodata",
-        { platform: "zebpay" },
+        { platform: platform },
         { headers: { ...headers, "x-access-token": token } }
       )
       .then((response) => {
-        console.log("response", response);
+        // console.log("response", response);
         calculatingHoldings(response.data);
       })
       .catch((err) => console.log("err: ", err));
