@@ -168,7 +168,7 @@ export const Transactions = () => {
         <Text fontSize="3xl"> All Transactions list</Text>
         <Flex justifyContent={"space-between"} alignItems={"center"}>
           <Select
-            placeholder="Select Exchange"
+            // placeholder="Select Exchange"
             value={value}
             onChange={(e) => {
               setValue(e.target.value);

@@ -204,7 +204,7 @@ function FileUpload() {
               </CustomSelect>
             </FormControl> */}
             <Select
-              placeholder="Select Exchange"
+              // placeholder="Select Exchange"
               value={value}
               onChange={(e) => setValue(e.target.value)}
             >

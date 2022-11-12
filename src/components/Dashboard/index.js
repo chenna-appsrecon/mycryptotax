@@ -428,7 +428,7 @@ const Dashboard = () => {
             </div>
             <Flex>
               <Select
-                placeholder="ALL"
+                // placeholder="ALL"
                 size="lg"
                 mr={5}
                 value={platform}
@@ -442,7 +442,7 @@ const Dashboard = () => {
               <Spacer />
               <Spacer />
               <Select placeholder="INR" size="lg">
-                <option value="option1">INR</option>
+                <option value="inr">INR</option>
                 {/* <option value="option2">USD </option> */}
               </Select>
             </Flex>
