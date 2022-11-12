@@ -23,7 +23,7 @@ import {
   Input,
   Center,
 } from "@chakra-ui/react";
-import { useAddress, useMetamask } from "@thirdweb-dev/react";
+// import { useAddress, useMetamask } from "@thirdweb-dev/react";
 import SidebarWithHeader from "./SideNavBar";
 
 const WalletApp = () => {
@@ -32,31 +32,31 @@ const WalletApp = () => {
 
   const initialRef = React.useRef(null);
   const finalRef = React.useRef(null);
-  const address = useAddress();
-  const connectWithMetamask = useMetamask();
+  // const address = useAddress();
+  // const connectWithMetamask = useMetamask();
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const handleApiKeyChange = (e) => setApiKey(e.target.value);
   const handleSecretKeyChange = (e) => setSecretKey(e.target.value);
-  console.log("👋 Address:", address);
+  // console.log("👋 Address:", address);
 
   const handleSubmit = () => {
     // console.log("E", apiKey, secretKey);
   };
   // This is the case where the user hasn't connected their wallet
   // to your web app. Let them call connectWallet.
-  if (!address) {
-    return (
-      <SidebarWithHeader>
-        <Container maxW="2xl" bg="white" centerContent>
-          <Box padding="4" maxW="md">
-            You can connect your wallet's here
-          </Box>
-          <Box padding="4" maxW="md" fontSize={"20"} fontWeight={"bold"}>
-            Coming soon ...
-          </Box>
-          {/* <Box padding="4" bg="" color="black" maxW="md">
+  // if (!address) {
+  return (
+    <SidebarWithHeader>
+      <Container maxW="2xl" bg="white" centerContent>
+        <Box padding="4" maxW="md">
+          You can connect your wallet's here
+        </Box>
+        <Box padding="4" maxW="md" fontSize={"20"} fontWeight={"bold"}>
+          Coming soon ...
+        </Box>
+        {/* <Box padding="4" bg="" color="black" maxW="md">
             <Button
               //   variant={"outline"}
               bg="#4FD1C5"
@@ -66,8 +66,8 @@ const WalletApp = () => {
               Connect Metamask wallet
             </Button>
           </Box> */}
-        </Container>
-        {/* <Container maxW="2xl" bg="white" mt={5} centerContent>
+      </Container>
+      {/* <Container maxW="2xl" bg="white" mt={5} centerContent>
           <Box padding="4" maxW="md">
             Add Your Wallet/Exchange
           </Box>
@@ -119,9 +119,9 @@ const WalletApp = () => {
             </ModalFooter>
           </ModalContent>
         </Modal> */}
-      </SidebarWithHeader>
-    );
-  }
+    </SidebarWithHeader>
+  );
+  // }
 
   // This is the case where we have the user's address
   // which means they've connected their wallet to our site!
