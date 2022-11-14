@@ -38,14 +38,17 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const PortfolioTable = ({ platform }) => {
+const PortfolioTable = ({ platform, data }) => {
   let token = localStorage.getItem("token");
   const [array, setArray] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getHoldingsDetailsFromAPI();
-  }, []);
+    if (data) {
+      calculatingHoldings(data);
+    }
+    // getHoldingsDetailsFromAPI();
+  }, [data]);
 
   const getHoldingsDetailsFromAPI = () => {
     axios

@@ -85,6 +85,7 @@ const Dashboard = () => {
   const [lastUpdated, setlastUpdated] = useState(new Date().toDateString());
   const [canvasOptions, setCanvasOptions] = useState("");
   const [platform, setPlatform] = useState("");
+  const [portfolioData, setPortfolioData] = useState("");
   const [coinsData, setCoins] = useState();
 
   useEffect(() => {
@@ -154,6 +155,7 @@ const Dashboard = () => {
       )
       .then((response) => {
         // console.log(response);
+        setPortfolioData(response.data);
         calculatePortFolioValue(response.data);
       })
       .catch((err) => {
@@ -172,7 +174,7 @@ const Dashboard = () => {
     setRefreshing(false);
     // symbolDetails[item.securityName.toLowerCase()].id
     localStorage.setItem("setPortfolioValue", sumWithInitial);
-    console.log("sumWithInitial", sumWithInitial);
+    // console.log("sumWithInitial", sumWithInitial);
   };
   let newReqObj = {};
 
@@ -182,7 +184,7 @@ const Dashboard = () => {
     // );
     let lastUpdated = dummyData.lastUpdated;
     let reqKeys = Object.keys(dummyData.totalCurrentValue);
-    console.log(Object.values(dummyData.totalCurrentValue));
+    // console.log(Object.values(dummyData.totalCurrentValue));
     let pricesLength = Object.values(dummyData.totalCurrentValue).map(
       (item) => item.length
     );
@@ -191,7 +193,7 @@ const Dashboard = () => {
     const minValueIndex = pricesLength.indexOf(min);
 
     let array = [];
-    console.log("reqKeys", reqKeys);
+    // console.log("reqKeys", reqKeys);
     for (let index = 0; index < min; index++) {
       let sum = 0;
       for (let a = 0; a < reqKeys.length; a++) {
@@ -260,7 +262,7 @@ const Dashboard = () => {
         },
       ],
     };
-    console.log("array", array);
+    // console.log("array", array);
     setCanvasOptions(reqCanvasData);
   };
 
@@ -658,11 +660,14 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-      <PortfolioTable
-      // holdings={holdings && holdings}
-      // coinsLatestPrice={coinsLatestPrice}
-      />
+      {portfolioData && (
+        <PortfolioTable
+          data={portfolioData}
+          platform={platform}
+          // holdings={holdings && holdings}
+          // coinsLatestPrice={coinsLatestPrice}
+        />
+      )}
 
       {/* <BarChart chartData={chartData} /> */}
       {/* {isLoaded ? (
