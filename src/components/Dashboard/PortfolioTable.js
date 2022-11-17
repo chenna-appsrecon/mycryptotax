@@ -101,7 +101,7 @@ const PortfolioTable = ({ platform, data }) => {
   // };
   // console.log("array", array);
   return (
-    <Box flex="1" p="6">
+    <Box flex="1" p={[0, 5]}>
       <Box
         w="full"
         h="full"

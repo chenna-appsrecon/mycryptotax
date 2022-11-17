@@ -92,6 +92,7 @@ const Dashboard = () => {
     if (!cryptoData.length) {
       fetchTransactionsByTime(1);
       handleProftfolio();
+      // getUserFileNames();
       // if (!localGraphData || localGraphData.length == 0) {
       //   fetchTransactionsByTime(1);
       // } else {
@@ -102,6 +103,18 @@ const Dashboard = () => {
       // }
     }
   }, [platform]);
+  const getUserFileNames = () => {
+    axios
+      .get(APP_URL + "getuserfilenames", {
+        headers: { ...headers, "x-access-token": token },
+      })
+      .then((response) => {
+        console.log("getuserfilenames", response);
+      })
+      .catch((err) => {
+        console.log("getuserfilenames err: ", err);
+      });
+  };
 
   const updateChartData = (day) => {
     if (day === days) {
@@ -233,7 +246,7 @@ const Dashboard = () => {
       animationEnabled: true,
       theme: "light2",
       title: {
-        text: "Portfolio data showing in graph",
+        text: "Portfolio data",
       },
       axisX: {
         valueFormatString: day === 1 ? "DD MMM HH:mm" : "DD MMM",
@@ -399,57 +412,57 @@ const Dashboard = () => {
 
   return (
     <SidebarWithHeader>
-      <Flex>
+      <Flex flexWrap={"wrap"} justifyContent={"space-between"}>
         <PageHeader portfolioValue={portfolioValue} />
-        <Spacer />
-        <Box>
-          <Flex alignItems="center">
-            {refreshError && (
-              <Alert status="error">
-                <AlertIcon />
-                There was an error in refreshing, please wait
-              </Alert>
-            )}
-            <div className={"float"}>
-              <Button
-                isLoading={isRefreshing}
-                loadingText="Updating will take a while... please wait"
-                colorScheme="teal"
-                variant="outline"
-                spinnerPlacement="start"
-                style={{ marginRight: "1em" }}
-                onClick={() => handleRefresh()}
-              >
-                <IconButton
-                  size="lg"
-                  variant="ghost"
-                  aria-label="open menu"
-                  icon={<RepeatIcon />}
-                />
-              </Button>
-            </div>
-            <Flex>
-              <Select
-                // placeholder="ALL"
+        {/* <Spacer /> */}
+        {/* <Box width={["100%"]}> */}
+        <Flex alignItems="center" flexWrap={["nowrap", "wrap"]}>
+          {refreshError && (
+            <Alert status="error">
+              <AlertIcon />
+              There was an error in refreshing, please wait
+            </Alert>
+          )}
+          <div className={"float"}>
+            <Button
+              isLoading={isRefreshing}
+              loadingText="Updating will take a while... please wait"
+              colorScheme="teal"
+              variant="outline"
+              spinnerPlacement="start"
+              style={{ marginRight: "1em" }}
+              onClick={() => handleRefresh()}
+            >
+              <IconButton
                 size="lg"
-                mr={5}
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-              >
-                <option value="">All</option>
-                <option value="wazirx">Wazirx</option>
-                {/* <option value="option2">CoinDcx </option> */}
-                <option value="zebpay">Zebpay</option>
-              </Select>
-              <Spacer />
-              <Spacer />
-              <Select placeholder="INR" size="lg">
-                <option value="inr">INR</option>
-                {/* <option value="option2">USD </option> */}
-              </Select>
-            </Flex>
+                variant="ghost"
+                aria-label="open menu"
+                icon={<RepeatIcon />}
+              />
+            </Button>
+          </div>
+          <Flex>
+            <Select
+              // placeholder="ALL"
+              size="lg"
+              mr={5}
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="wazirx">Wazirx</option>
+              {/* <option value="option2">CoinDcx </option> */}
+              <option value="zebpay">Zebpay</option>
+            </Select>
+            <Spacer />
+            <Spacer />
+            <Select placeholder="INR" size="lg">
+              <option value="inr">INR</option>
+              {/* <option value="option2">USD </option> */}
+            </Select>
           </Flex>
-        </Box>
+        </Flex>
+        {/* </Box> */}
       </Flex>
 
       <div className={""}>
@@ -474,16 +487,10 @@ const Dashboard = () => {
                 width: "100%",
               }}
             >
-              <div
-                className=""
-                style={{
-                  display: "flex",
-                  marginTop: 20,
-                  justifyContent: "flex-end",
-                  width: "100%",
-                  // maxWidth: "50%",
-                  minWidth: "300px",
-                }}
+              <Flex
+                flexWrap={"wrap"}
+                justifyContent={["flex-start", "flex-end"]}
+                mt={5}
               >
                 {chartDays.map((day) => (
                   <Button
@@ -496,12 +503,12 @@ const Dashboard = () => {
                     style={
                       day.value === days
                         ? {
-                            marginRight: "1em",
+                            margin: "1em 1em 0 0",
                             backgroundColor: "black",
                             color: "white",
                           }
                         : {
-                            marginRight: "1em",
+                            margin: "1em 1em 0 0",
                           }
                     }
                     selected={day.value === days}
@@ -509,7 +516,7 @@ const Dashboard = () => {
                     {day.label}
                   </Button>
                 ))}
-              </div>
+              </Flex>
             </div>
             <div
               style={{

@@ -51,6 +51,7 @@ const headerKeys = [
   // "otherCharges",
   // "fileRef",
 ];
+
 export const ProfitLossTransactions = () => {
   const [data, setData] = useState([]);
   const [wholedata, setWholeData] = useState([]);
@@ -73,6 +74,10 @@ export const ProfitLossTransactions = () => {
       {
         Header: "Trade Type",
         accessor: "tradeType",
+      },
+      {
+        Header: "Platform",
+        accessor: "platform",
       },
       {
         Header: "Transaction Date",

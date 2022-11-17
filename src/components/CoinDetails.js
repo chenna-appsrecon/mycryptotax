@@ -107,7 +107,7 @@ const CoinDetails = () => {
       animationEnabled: true,
       theme: "light2",
       title: {
-        text: "Portfolio data showing in graph",
+        text: "Portfolio data",
       },
       axisX: {
         valueFormatString: day === 1 ? "DD MMM HH:mm" : "DD MMM",
@@ -243,7 +243,7 @@ const CoinDetails = () => {
         borderRadius="lg"
         // boxShadow={"0px 12px 40px rgba(16, 24, 64, 0.24)"}
         bgColor={"white"}
-        padding={5}
+        padding={[1, 5]}
         //   maxWidth={"100%"}
         //   minWidth={"200px"}
       >
@@ -303,53 +303,39 @@ const CoinDetails = () => {
               <CircularProgress isIndeterminate color="green.300" />
             </Center>
           ) : (
-            <div className="coin-chart" style={{}}>
-              <div
-                style={{
-                  display: "flex",
-                  marginTop: 20,
-                  justifyContent: "flex-end",
-                  width: "100%",
-                }}
+            <div className="coin-chart">
+              <Flex
+                flexWrap={"wrap"}
+                justifyContent={["flex-start", "flex-end"]}
+                mt={5}
               >
-                <div
-                  className=""
-                  style={{
-                    display: "flex",
-                    marginTop: 20,
-                    justifyContent: "flex-end",
-                    width: "100%",
-                    maxWidth: "50%",
-                    minWidth: "300px",
-                  }}
-                >
-                  {chartDays.map((day) => (
-                    <Button
-                      isLoading={day.value === days && isLoading}
-                      style={
-                        day.value === days
-                          ? {
-                              marginRight: "1em",
-                              backgroundColor: "black",
-                              color: "white",
-                            }
-                          : {
-                              marginRight: "1em",
-                            }
-                      }
-                      key={day.value}
-                      onClick={() => {
-                        // setflag(false);
+                {chartDays.map((day) => (
+                  <Button
+                    isLoading={day.value === days && isLoading}
+                    style={
+                      day.value === days
+                        ? {
+                            margin: "1em 1em 0.5em 0",
+                            backgroundColor: "black",
+                            color: "white",
+                          }
+                        : {
+                            margin: "1em 1em 0.5em 0",
+                          }
+                    }
+                    key={day.value}
+                    onClick={() => {
+                      // setflag(false);
 
-                        updateChartData(day.value);
-                      }}
-                      selected={day.value === days}
-                    >
-                      {day.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+                      updateChartData(day.value);
+                    }}
+                    selected={day.value === days}
+                  >
+                    {day.label}
+                  </Button>
+                ))}
+              </Flex>
+
               <Box bg={"white"} flex="1">
                 {canvasOptions && (
                   <CanvasJSChart
@@ -468,7 +454,7 @@ const CoinDetails = () => {
           Export
         </Button>
       </Flex>
-      <Box bg={"white"} flex="1" p="6">
+      <Box bg={"white"} flex="1" p={[1, 5]}>
         <Box
           w="full"
           h="full"
