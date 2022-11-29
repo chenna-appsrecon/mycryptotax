@@ -87,6 +87,7 @@ const CoinDetails = () => {
     setIsLoading(false);
     setflag(true);
   };
+
   const formatDatainto = (historicData, days) => {
     const data = historicData.map((coin) => {
       return { x: new Date(coin[0]), y: coin[1] * quantity };
@@ -247,56 +248,58 @@ const CoinDetails = () => {
         //   maxWidth={"100%"}
         //   minWidth={"200px"}
       >
-        {/* <Flex alignItems={"flex-start"} justifyContent="flex-start" mb={6}> */}
-        {/* <Box> */}
-        <HStack justify="flex-start">
-          {/* <img
+        <Flex alignItems={"flex-start"} justifyContent="space-between" mb={6}>
+          <Box>
+            <HStack justify="flex-start">
+              {/* <img
                   src={coinData?.image.small}
                   alt={coinData?.name}
                   height="200"
                   style={{ marginBottom: 20 }}
                 /> */}
-          <Image
-            src={coinData && coinData?.image?.small}
-            alt={coinData?.name}
-          />
+              <Image
+                src={coinData && coinData?.image?.small}
+                alt={coinData?.name}
+              />
 
-          <Heading
-            size={useBreakpointValue({
-              base: "sm",
-              md: "md",
-            })}
-          >
-            {coinData?.name}
-          </Heading>
+              <Heading
+                size={useBreakpointValue({
+                  base: "sm",
+                  md: "md",
+                })}
+              >
+                {coinData?.name}
+              </Heading>
 
-          {/* <Icon as={FiMoreVertical} boxSize="5" color="muted" /> */}
-        </HStack>
-        <HStack justify="space-between">
-          {/* <Text fontSize="sm" color="muted">
+              {/* <Icon as={FiMoreVertical} boxSize="5" color="muted" /> */}
+            </HStack>
+            <HStack justify="space-between">
+              {/* <Text fontSize="sm" color="muted">
                   {"36"}
                 </Text> */}
 
-          {/* <Badge variant="subtle" colorScheme={true ? "green" : "red"}>
+              {/* <Badge variant="subtle" colorScheme={true ? "green" : "red"}>
                   <HStack spacing="1">
                     <Icon as={true ? FiArrowUpRight : FiArrowDownRight} />
                     <Text>2</Text>
                   </HStack>
                 </Badge> */}
-        </HStack>
-        <Text fontSize="lg" color="muted" mt={1}>
-          <b>{"Total asset value : Rs." + sum}</b>
-        </Text>
-        <Text fontSize="md" color="muted" mt={2}>
-          {"Holdings: " + (quantity && quantity)}
-        </Text>
-        <Text fontSize="md" color="muted">
-          {"Current Price: Rs." + (currentPrice && currentPrice)}
-        </Text>
-
-        {/* </Box> */}
+            </HStack>
+            <Text fontSize="lg" color="muted" mt={1}>
+              <b>{"Total asset value : Rs." + sum}</b>
+            </Text>
+            <Text fontSize="md" color="muted" mt={2}>
+              {"Holdings: " + (quantity && quantity)}
+            </Text>
+            <Text fontSize="md" color="muted">
+              {"Current Price: Rs." + (currentPrice && currentPrice)}
+            </Text>
+          </Box>
+          {/* <Button colorScheme="teal" variant="outline">
+            + Add Alert
+          </Button> */}
+        </Flex>
         <Divider />
-        {/* </Flex> */}
         <div className={"coin-graph-container"}>
           {!historicData | (flag === false) ? (
             <Center mt={3}>

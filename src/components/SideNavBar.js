@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   IconButton,
   Avatar,
@@ -118,6 +118,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
 };
 
 const NavItem = ({ path, icon, children, ...rest }) => {
+  let location = useLocation();
   return (
     <Link
       href={path}
@@ -131,12 +132,18 @@ const NavItem = ({ path, icon, children, ...rest }) => {
         borderRadius="lg"
         role="group"
         cursor="pointer"
+        style={
+          path == location.pathname
+            ? { background: "#0BC5EA", color: "white" }
+            : {}
+        }
         _hover={{
-          bg: "cyan.400",
-          color: "white",
+          bg: "cyan.100",
+          color: "cyan.400",
         }}
         {...rest}
       >
+        {/* {console.log("path", path)} */}
         {icon && (
           <Icon
             mr="4"

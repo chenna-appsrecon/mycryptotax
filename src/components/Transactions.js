@@ -11,16 +11,29 @@ import {
   TableContainer,
   Button,
   Box,
-  Container,
   Center,
-  HStack,
-  Icon,
-  Square,
   Text,
   useColorModeValue as mode,
   Select,
   Flex,
   Link,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  NumberInput,
+  NumberInputField,
+  Input,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { useTable, useSortBy } from "react-table";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
@@ -29,6 +42,7 @@ import FileUpload from "./FileUpload";
 import SidebarWithHeader from "./SideNavBar";
 import Dropzone from "./Dropzone";
 import { APP_URL, headerKeys } from "../constants";
+import { symbolDetails } from "../Coindeckodetails";
 // import { headers } from "../api";
 
 const headers = {
@@ -41,6 +55,29 @@ export const Transactions = () => {
   const [wholedata, setWholeData] = useState([]);
   const [array, setArray] = useState([]);
   const [value, setValue] = useState("all");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedCoin, setSelectedCoin] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState("INR");
+  const [selectedTradeType, setSelectedTradeType] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [brokerage, setBrokerage] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [isCoinError, setIsCoinError] = useState("");
+  const [isDateError, setIsDateError] = useState("");
+  const [isQuantityError, setIsQuantityError] = useState("");
+  const [isBrokerageError, setIsBrokerageError] = useState("");
+  const [isCurrencyError, setIsCurrencyError] = useState("");
+  const [isTradeTypeError, setIsTradeTypeError] = useState("");
+  const [isPlatformError, setIsPlatformError] = useState("");
+  const [transactionSuccess, setTransactionSuccess] = useState("");
+  const [isLoadingTransaction, setisLoadingTransaction] = useState(false);
+
+  const initialRef = React.useRef(null);
+  const finalRef = React.useRef(null);
+
+  const [coinsList, setCoinsList] = useState(Object.keys(symbolDetails));
   const columns = React.useMemo(
     () => [
       {
@@ -86,6 +123,11 @@ export const Transactions = () => {
     ],
     []
   );
+  const handleSelectedDate = (e) => {
+    console.log(e.target.value);
+    setSelectedDate(e.target.value);
+    if (isDateError) setIsDateError("");
+  };
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable(
       {
@@ -106,6 +148,82 @@ export const Transactions = () => {
         setWholeData(response.data);
         // setArray(response.data);
         // console.log("response", response);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
+  const handleAddTransaction = () => {
+    setisLoadingTransaction(true);
+    if (!selectedDate) {
+      setIsDateError("error");
+    }
+    if (!quantity) {
+      setIsQuantityError("error");
+    }
+    if (!brokerage) {
+      setIsBrokerageError("error");
+    }
+    if (!selectedCurrency) {
+      setIsCurrencyError("error");
+    }
+    if (!selectedTradeType) {
+      setIsTradeTypeError("error");
+    }
+    if (!selectedCoin) {
+      setIsCoinError("error");
+    }
+    if (!selectedPlatform) {
+      setIsPlatformError("error");
+    }
+
+    if (
+      isDateError ||
+      isQuantityError ||
+      brokerage == "" ||
+      isCurrencyError ||
+      isTradeTypeError ||
+      isCoinError ||
+      isPlatformError
+    ) {
+      setValidationError(true);
+      setisLoadingTransaction(false);
+      return;
+    }
+    // else {
+    //   setIsDateError("");
+    //   setIsQuantityError("");
+    //   setIsBrokerageError("");
+    //   setIsCurrencyError("");
+    //   setIsTradeTypeError("");
+    //   setIsCoinError("");
+    //   setIsPlatformError("");
+    // }
+    setValidationError("");
+
+    axios
+      .post(
+        APP_URL + "addtransaction",
+        {
+          securityName: selectedCoin,
+          quantity: quantity,
+          transactionDate: selectedDate,
+          platform: selectedPlatform,
+          tradeType: selectedTradeType,
+          feePaidIn: selectedCurrency,
+          brokerage: brokerage,
+        },
+        { headers: { ...headers, "x-access-token": token } }
+      )
+      .then((response) => {
+        // let data = response.data;
+        // setGraphData(data);
+        setisLoadingTransaction(false);
+        setTransactionSuccess(true);
+        setTimeout(() => {
+          setTransactionSuccess("");
+          onClose();
+        }, 2000);
+        console.log("reqData", response);
       })
       .catch((err) => console.log("err: ", err));
   };
@@ -159,32 +277,48 @@ export const Transactions = () => {
     }
   };
 
-  const firstPageRows = rows.slice(0, 20);
+  const handleGivenQuantity = (e) => {
+    setQuantity(e.target.value);
+    if (isQuantityError) setIsQuantityError("");
+  };
+  const handleGivenBrokerage = (e) => {
+    setBrokerage(e.target.value);
+    if (isBrokerageError) setIsBrokerageError("");
+  };
+
+  const firstPageRows = rows;
   // console.log("firstPageRows", firstPageRows);
 
   return (
     <SidebarWithHeader>
+      <Flex justifyContent={"flex-end"} alignItems={"flex-start"}>
+        <Select
+          // placeholder="Select Exchange"
+          value={value}
+          width={"fit-content"}
+          onChange={(e) => {
+            setValue(e.target.value);
+            handleFilter(e.target.value);
+          }}
+          style={{ marginBottom: "0.5em" }}
+        >
+          <option value="all">ALL</option>
+          <option value="wazirx">Wazirx</option>
+          <option value="zebpay">Zebpay</option>
+        </Select>
+      </Flex>
+
       <Flex justifyContent={"space-between"} alignItems={"center"}>
         <Text fontSize="3xl"> All Transactions list</Text>
         <Flex justifyContent={"space-between"} alignItems={"center"}>
-          <Select
-            // placeholder="Select Exchange"
-            value={value}
-            onChange={(e) => {
-              setValue(e.target.value);
-              handleFilter(e.target.value);
-            }}
-            style={{ marginBottom: "0.5em" }}
-          >
-            <option value="all">ALL</option>
-            <option value="wazirx">Wazirx</option>
-            <option value="zebpay">Zebpay</option>
-          </Select>
+          <Button colorScheme="teal" variant="outline" onClick={onOpen}>
+            + Add Transaction
+          </Button>
           <Button
-            mb={6}
-            marginLeft={3}
+            // mb={6}
+            marginLeft={5}
             colorScheme="blue"
-            mt={4}
+            // mt={4}
             disabled={!(data && data.length > 0)}
             onClick={(e) => {
               exportCSVFromTable(headerKeys, data);
@@ -194,6 +328,140 @@ export const Transactions = () => {
           </Button>
         </Flex>
       </Flex>
+      <Modal
+        initialFocusRef={initialRef}
+        finalFocusRef={finalRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Add New Transaction</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {validationError ? (
+              <p style={{ color: "red" }}>Please fill all fields</p>
+            ) : (
+              ""
+            )}
+
+            {/* <form onSubmit={handleSubmit}> */}
+            <FormControl isRequired>
+              <FormLabel>Coin</FormLabel>
+              <Select
+                isInvalid={isCoinError == "error"}
+                placeholder="Select Coin"
+                value={selectedCoin}
+                onChange={(e) => {
+                  setSelectedCoin(e.target.value);
+                  if (isCoinError) {
+                    setIsCoinError("");
+                  }
+                }}
+              >
+                {coinsList &&
+                  coinsList.length > 0 &&
+                  coinsList.map((item, i) => (
+                    <option key={i}>{item.toUpperCase()}</option>
+                  ))}
+              </Select>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>TradeType</FormLabel>
+              <Select
+                isInvalid={isTradeTypeError == "error"}
+                placeholder="Select TradeType"
+                value={selectedTradeType}
+                onChange={(e) => {
+                  setSelectedTradeType(e.target.value);
+                }}
+              >
+                <option>BUY</option>
+                <option>SELL</option>
+              </Select>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Platform</FormLabel>
+              <Select
+                isInvalid={isPlatformError == "error"}
+                placeholder="Select Platform"
+                value={selectedPlatform}
+                onChange={(e) => {
+                  setSelectedPlatform(e.target.value);
+                  if (isPlatformError) {
+                    setIsPlatformError("");
+                  }
+                }}
+              >
+                <option>Wazirx</option>
+                <option>Zebpay</option>
+              </Select>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Fee Paid In</FormLabel>
+              <Select
+                isInvalid={isCurrencyError == "error"}
+                placeholder="Select currency"
+                value={selectedCurrency}
+                onChange={(e) => {
+                  setSelectedCurrency(e.target.value);
+                  if (isCurrencyError) {
+                    setIsCurrencyError("");
+                  }
+                }}
+              >
+                <option>INR</option>
+                {/* <option>BTC</option> */}
+              </Select>
+            </FormControl>
+            <FormControl isRequired isInvalid={isDateError == "error"}>
+              <FormLabel>Transaction date</FormLabel>
+              <Input
+                placeholder="Select Date"
+                size="md"
+                type="date"
+                value={selectedDate}
+                onChange={handleSelectedDate}
+              />
+              {!isDateError == "error" ? (
+                <FormHelperText>Select Date of transaction</FormHelperText>
+              ) : (
+                <FormErrorMessage>Date is required.</FormErrorMessage>
+              )}
+            </FormControl>
+            <FormControl isRequired isInvalid={isQuantityError == "error"}>
+              <FormLabel>Quantity</FormLabel>
+              <NumberInput min={0} value={quantity}>
+                <NumberInputField onChange={handleGivenQuantity} />
+              </NumberInput>
+            </FormControl>
+            <FormControl isRequired isInvalid={isBrokerageError == "error"}>
+              <FormLabel>Brokerage</FormLabel>
+              <NumberInput min={0} value={brokerage}>
+                <NumberInputField onChange={handleGivenBrokerage} />
+              </NumberInput>
+            </FormControl>
+            {/* </form> */}
+          </ModalBody>
+          {transactionSuccess && (
+            <Alert status="success">
+              <AlertIcon />
+              Added New Transaction
+            </Alert>
+          )}
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              isLoading={isLoadingTransaction}
+              mr={3}
+              onClick={() => handleAddTransaction()}
+            >
+              Save
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <Box bg={"white"} flex="1" p="6">
         <Box
           w="full"
