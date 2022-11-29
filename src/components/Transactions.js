@@ -219,6 +219,7 @@ export const Transactions = () => {
         // setGraphData(data);
         setisLoadingTransaction(false);
         setTransactionSuccess(true);
+        fetchTransactions();
         setTimeout(() => {
           setTransactionSuccess("");
           onClose();
