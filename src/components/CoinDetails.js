@@ -31,6 +31,21 @@ import {
   Link,
   CircularProgress,
   Image,
+  Input,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Select,
+  Grid,
 } from "@chakra-ui/react";
 
 import {
@@ -48,6 +63,7 @@ import { symbolDetails } from "../Coindeckodetails";
 const API_URL = "https://stockpalapi.glassball.app";
 
 const CoinDetails = () => {
+  let token = localStorage.getItem("token");
   const { id, quantity } = useParams();
   const [flag, setflag] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -58,17 +74,32 @@ const CoinDetails = () => {
   const [totalAssets, setTotalAssets] = useState(0);
   const [transactionData, setTransactionData] = useState();
   const [array, setArray] = useState([]);
+  const [holdingsData, setHoldingsData] = useState([]);
   const [graphData, setGraphData] = useState([]);
   const [historicData, setHistoricData] = useState([]);
   const [coinData, setCoinData] = useState();
   const [days, setDays] = useState(1);
   const [sum, setSum] = useState(0);
+  const [coinsList, setCoinsList] = useState(Object.keys(symbolDetails));
+  const [isCoinError, setIsCoinError] = useState("");
+  const [selectedCoin, setSelectedCoin] = useState("");
   // const { currency } = CryptoState();
   const [currency, setCurrency] = useState("INR");
   const [symbol, setSymbol] = useState("₹");
   const [currentPrice, setCurrentPrice] = useState(0);
   const [canvasOptions, setCanvasOptions] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialRef = React.useRef(null);
+  const finalRef = React.useRef(null);
+  const [platform, setPlatform] = useState("zebpay");
+  const [typeofChange, settypeofChange] = useState("above");
+  const [typeofValue, settypeofvalue] = useState("percentage");
+  const [value, setValue] = useState(0);
+  const [trackBy, setTrackBy] = useState("costbasis");
+  const [comments, setComments] = useState("Alert");
+  const coinId = id;
+  // console.log("coinId", coinId);
   // const [isRefreshing, setRefreshing] = useState(false);
   var CanvasJS = CanvasJSReact.CanvasJS;
   var CanvasJSChart = CanvasJSReact.CanvasJSChart;
@@ -88,6 +119,42 @@ const CoinDetails = () => {
     setflag(true);
   };
 
+  const getHoldingsDetailsFromAPI = (platform) => {
+    axios
+      .post(
+        APP_URL + "getportfoliodata",
+        { platform: platform },
+        { headers: { ...headers, "x-access-token": token } }
+      )
+      .then((response) => {
+        // console.log("getportfoliodata", response);
+        calculatingHoldings(response.data);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
+  const calculatingHoldings = (givenData) => {
+    let data = [];
+    let keys = Object.keys(givenData.totalCurrentValue);
+    let totalCoinHoldings = 0;
+    // keys.map((key) => {
+    let obj = {};
+    //   obj["Asset"] = key;
+    obj["Holdings"] = givenData.totalQuantity[id]
+      ? givenData.totalQuantity[id]
+      : 0;
+
+    obj["Purchased value"] = givenData.totalPurchaseValue[id]
+      ? givenData.totalPurchaseValue[id]
+      : 0;
+
+    // obj["Current Value"] = givenData.totalCurrentValue[key];
+    // obj["Difference"] = givenData.totalDiff[key];
+    // data.push(obj);
+    // });
+    setHoldingsData(obj);
+  };
+
   const formatDatainto = (historicData, days) => {
     const data = historicData.map((coin) => {
       return { x: new Date(coin[0]), y: coin[1] * quantity };
@@ -103,6 +170,7 @@ const CoinDetails = () => {
     hiddenElement.download = "MyCryptoTaxDetails.csv";
     hiddenElement.click();
   };
+
   const returnCanvasData = (array, day) => {
     let reqCanvasData = {
       animationEnabled: true,
@@ -165,6 +233,61 @@ const CoinDetails = () => {
     downloadCSV(csvString);
   };
 
+  const handlePlatform = (platform) => {
+    setPlatform(platform);
+    getHoldingsDetailsFromAPI(platform);
+  };
+  const handleTypeofChange = (typeofChange) => {
+    settypeofChange(typeofChange);
+  };
+  const handleTypeofValue = (typeofValue) => {
+    settypeofvalue(typeofValue);
+  };
+  const handleValue = (value) => {
+    setValue(value);
+    console.log("=========value", value);
+  };
+
+  const handleAlertSubmit = () => {
+    // console.log({
+    //   coin: coinId,
+    //   platform: platform,
+    //   typeofchange: typeofChange,
+    //   typeofvalue: typeofValue,
+    //   value: value,
+    // });
+    // return;
+    axios
+      .post(
+        APP_URL + "setalert",
+        {
+          platform,
+          typeofchange: typeofChange,
+          comment: comments,
+          typeofalert: trackBy,
+          coin: coinId,
+          platform: platform,
+          typeofvalue: typeofValue,
+          value: value || 0,
+        },
+        { headers: { ...headers, "x-access-token": token } }
+      )
+      .then((response) => {
+        // let data = response.data;
+        // setGraphData(data);
+        // setisLoadingTransaction(false);
+        // setTransactionSuccess(true);
+        // fetchTransactions();
+        // setPlatform("");
+        // settypeofChange("");
+        // settypeofvalue("");
+        // setValue("");
+        onClose();
+        // console.log("reqData", response);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
   const fetchCoin = async () => {
     const { data } = await axios.get(
       SingleCoin(symbolDetails[id.toLowerCase()].id)
@@ -176,6 +299,8 @@ const CoinDetails = () => {
     fetchHistoricData(days);
     fetchTransactionsbyCoin();
     // fetchGraphbyCoin();
+    getHoldingsDetailsFromAPI(platform);
+    fetchTransactionsByPlatform();
     fetchCoin();
   }, []);
 
@@ -191,16 +316,50 @@ const CoinDetails = () => {
     axios
       .post(
         APP_URL + "gettransactionbycoin",
-        { coin: `${id}`, platform: "zebpay" },
+        { coin: `${id}`, platform: platform },
         { headers: headers }
       )
       .then((response) => {
         let data = response.data;
         setArray(data);
-        console.log("reqData", symbol, data);
+        totalCostData(data);
+        // console.log("reqData", symbol, data);
       })
       .catch((err) => console.log("err: ", err));
   };
+
+  const fetchTransactionsByPlatform = () => {
+    console.log("token", token);
+    console.log("headers", headers);
+    axios
+      .post(
+        APP_URL + "gettransactionsbyplatform",
+        { platform, securityName: id },
+        { headers: { ...headers, "x-access-token": token } }
+      )
+      .then((response) => {
+        let data = response;
+        // setGraphData(data);
+        // console.log("reqData", response);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
+  const fetchAlerts = () => {
+    axios
+      .get(
+        APP_URL + "getalertsbyuser",
+        { coin: `${id}`, parameter: "1week" },
+        { headers: headers }
+      )
+      .then((response) => {
+        let data = response;
+        // setGraphData(data);
+        console.log("reqData", response);
+      })
+      .catch((err) => console.log("err: ", err));
+  };
+
   const fetchGraphbyCoin = () => {
     axios
       .post(
@@ -216,6 +375,12 @@ const CoinDetails = () => {
       })
       .catch((err) => console.log("err: ", err));
   };
+  const handleTrackBy = (selectedTrackBy) => {
+    setTrackBy(selectedTrackBy);
+  };
+  const handleComments = (value) => {
+    setComments(value);
+  };
 
   const totalCostData = (dummyData) => {
     let newReqObj = {};
@@ -229,11 +394,61 @@ const CoinDetails = () => {
           newReqObj[item[0]] = item[1] ? item[1] : 0;
         }
       });
-    console.log("newReqObj", newReqObj);
+    // console.log("newReqObj", newReqObj);
     setSum(newReqObj[moment().format("DD-MM-YYYY")].costBasis);
     setCurrentPrice(newReqObj[moment().format("DD-MM-YYYY")].current_price);
     setGraphData(newReqObj);
     setflag(true);
+  };
+
+  const trackingPrice = () => {
+    let result = 0;
+    let givenValue = value || 0;
+    if (typeofChange == "above") {
+      if (trackBy == "currentvalue") {
+        if (typeofValue == "percentage") {
+          result =
+            parseFloat(currentPrice) +
+            parseFloat(currentPrice) * (parseFloat(givenValue) / 100);
+        } else {
+          result = parseFloat(currentPrice) + parseFloat(givenValue);
+        }
+      } else {
+        if (typeofValue == "percentage") {
+          result =
+            parseFloat(holdingsData["Purchased value"]) +
+            parseFloat(holdingsData["Purchased value"]) *
+              (parseFloat(givenValue) / 100);
+        } else {
+          result =
+            parseFloat(holdingsData["Purchased value"]) +
+            parseFloat(givenValue);
+        }
+      }
+    } else {
+      if (trackBy == "currentvalue") {
+        if (typeofValue == "percentage") {
+          result =
+            parseFloat(currentPrice) -
+            parseFloat(currentPrice) * (parseFloat(givenValue) / 100);
+        } else {
+          result = parseFloat(currentPrice) - parseFloat(givenValue);
+        }
+      } else {
+        if (typeofValue == "percentage") {
+          result =
+            parseFloat(holdingsData["Purchased value"]) -
+            parseFloat(holdingsData["Purchased value"]) *
+              (parseFloat(givenValue) / 100);
+        } else {
+          result =
+            parseFloat(holdingsData["Purchased value"]) -
+            parseFloat(givenValue);
+        }
+      }
+    }
+
+    return result.toFixed(2);
   };
 
   // console.log("coinData", coinData);
@@ -286,7 +501,10 @@ const CoinDetails = () => {
                 </Badge> */}
             </HStack>
             <Text fontSize="lg" color="muted" mt={1}>
-              <b>{"Total asset value : Rs." + sum}</b>
+              <b>
+                {"Total asset value : Rs." +
+                  Intl.NumberFormat("en-IN").format(sum)}
+              </b>
             </Text>
             <Text fontSize="md" color="muted" mt={2}>
               {"Holdings: " + (quantity && quantity)}
@@ -295,10 +513,194 @@ const CoinDetails = () => {
               {"Current Price: Rs." + (currentPrice && currentPrice)}
             </Text>
           </Box>
-          {/* <Button colorScheme="teal" variant="outline">
+          <Button colorScheme="teal" variant="outline" onClick={() => onOpen()}>
             + Add Alert
-          </Button> */}
+          </Button>
         </Flex>
+        <Modal
+          style={{ minWidth: "1000px" }}
+          initialFocusRef={initialRef}
+          finalFocusRef={finalRef}
+          isOpen={isOpen}
+          size={"2xl"}
+          onClose={onClose}
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Add Your Alert</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <Grid
+                templateColumns={["none", "none", "repeat(2, 1fr)"]}
+                gap={4}
+              >
+                {/* <Flex flexWrap={["wrap", "wrap", "nowrap"]}> */}
+                <FormControl mt={4} mb={4}>
+                  <FormLabel>Platform</FormLabel>
+                  <Select
+                    value={platform}
+                    onChange={(e) => {
+                      handlePlatform(e.target.value);
+                    }}
+                  >
+                    <option value="wazirx">Wazirx</option>
+                    <option value="zebpay">Zebpay</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl mt={4}>
+                  <FormLabel>Selected Asset</FormLabel>
+                  <Input placeholder="Selected Coin" value={id} readOnly />
+                </FormControl>
+              </Grid>
+              <Grid
+                templateColumns={["none", "none", "repeat(3, 1fr)"]}
+                gap={4}
+              >
+                <FormControl mt={4}>
+                  <FormLabel>Total {id}</FormLabel>
+                  <Input
+                    placeholder={id + " value"}
+                    value={
+                      holdingsData &&
+                      holdingsData.Holdings &&
+                      Intl.NumberFormat("en-IN").format(holdingsData.Holdings)
+                    }
+                    readOnly
+                    // onChange={(e) => handleValue(e.target.value)}
+                  />
+                  {console.log("holdingsData", holdingsData)}
+                </FormControl>
+
+                <FormControl mt={4}>
+                  <FormLabel>{id} Cost basis</FormLabel>
+                  <Input
+                    placeholder="Cost basis"
+                    value={
+                      holdingsData &&
+                      holdingsData["Purchased value"] &&
+                      Intl.NumberFormat("en-IN").format(
+                        holdingsData["Purchased value"]
+                      )
+                    }
+                    readOnly
+                    // onChange={(e) => handleValue(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl mt={4}>
+                  <FormLabel>{id} Current Price</FormLabel>
+                  <Input
+                    placeholder="current price"
+                    value={
+                      currentPrice &&
+                      Intl.NumberFormat("en-IN").format(currentPrice)
+                    }
+                    readOnly
+                    // onChange={(e) => handleValue(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid
+                templateColumns={["none", "none", "repeat(4, 1fr)"]}
+                gap={4}
+              >
+                <FormControl mt={4} mb={4}>
+                  <FormLabel>Track</FormLabel>
+                  <Select
+                    value={trackBy}
+                    onChange={(e) => {
+                      handleTrackBy(e.target.value);
+                    }}
+                  >
+                    <option value="costbasis">Cost Basis</option>
+                    <option value="currentvalue">Current Value</option>
+                  </Select>
+                </FormControl>
+                <FormControl mt={4} mb={4}>
+                  <FormLabel>Alert For</FormLabel>
+                  <Select
+                    value={typeofChange}
+                    onChange={(e) => {
+                      handleTypeofChange(e.target.value);
+                    }}
+                  >
+                    <option value="above">Increases by</option>
+                    <option value="below">Decreases by</option>
+                  </Select>
+                </FormControl>
+                <FormControl mt={4} mb={4}>
+                  <FormLabel>Change In</FormLabel>
+                  <Select
+                    value={typeofValue}
+                    onChange={(e) => {
+                      handleTypeofValue(e.target.value);
+                    }}
+                  >
+                    <option value="percentage">Percentage</option>
+                    <option value="number">Number</option>
+                  </Select>
+                </FormControl>
+                <FormControl mt={4}>
+                  <FormLabel>Value</FormLabel>
+                  <Input
+                    placeholder="Value"
+                    value={
+                      value &&
+                      Intl.NumberFormat("en-IN").format(parseFloat(value))
+                    }
+                    onChange={(e) => handleValue(e.target.value)}
+                  />
+                </FormControl>
+              </Grid>
+              <Text>
+                Example1 : If Current {id} portfolio value increases by 20% WRT
+                to cost basis send me an alert.
+              </Text>
+              <Text>
+                Example 2: If tracking prices decreases by Rs 2000 send me an
+                alert.
+              </Text>
+              <FormControl mt={4}>
+                <FormLabel>Your tracking price</FormLabel>
+                <Input
+                  placeholder="price"
+                  value={
+                    trackingPrice() &&
+                    Intl.NumberFormat("en-IN").format(trackingPrice())
+                  }
+                  readOnly
+                  // onChange={(e) => handleValue(e.target.value)}
+                />
+              </FormControl>
+              <Text>
+                You will be sent an alert when your {id} portfolio value reaches
+                Rs.{" "}
+                {trackingPrice() &&
+                  Intl.NumberFormat("en-IN").format(trackingPrice())}
+              </Text>
+              <FormControl mt={4}>
+                <FormLabel>Add Comments</FormLabel>
+                <Input
+                  placeholder="Add some comments here"
+                  value={comments}
+                  onChange={(e) => handleComments(e.target.value)}
+                />
+              </FormControl>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button
+                colorScheme="blue"
+                mr={3}
+                // disabled={true}
+                onClick={() => handleAlertSubmit()}
+              >
+                Create Alert
+              </Button>
+              <Button onClick={onClose}>Cancel</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
         <Divider />
         <div className={"coin-graph-container"}>
           {!historicData | (flag === false) ? (

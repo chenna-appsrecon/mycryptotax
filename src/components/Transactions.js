@@ -224,7 +224,7 @@ export const Transactions = () => {
           setTransactionSuccess("");
           onClose();
         }, 2000);
-        console.log("reqData", response);
+        // console.log("reqData", response);
       })
       .catch((err) => console.log("err: ", err));
   };
@@ -377,8 +377,10 @@ export const Transactions = () => {
                   setSelectedTradeType(e.target.value);
                 }}
               >
-                <option>BUY</option>
-                <option>SELL</option>
+                <option>Deposit</option>
+                <option>Withdrawl</option>
+                <option>Buy</option>
+                <option>Sell</option>
               </Select>
             </FormControl>
             <FormControl isRequired>

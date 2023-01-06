@@ -34,6 +34,7 @@ import { SourceUpload } from "./components/SourceUpload";
 import CoinDetails from "./components/CoinDetails";
 import WalletApp from "./components/Wallet";
 import { ProfitLossTransactions } from "./components/ProfitLossPositions";
+import AlertsList from "./components/AlertsList";
 
 const SidebarWithHeader = lazy(() => import("./components/SideNavBar"));
 // const LoginPage = lazy(() => import("./Auth/SignIn"));
@@ -97,6 +98,7 @@ const App = () => {
         <Routes>
           <Route path="/signin" element={<LoginPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/alerts" element={<AlertsList />} />
           <Route path="/connectwallet" element={<WalletApp />} />
 
           <Route path="/signup" element={<Register />} />

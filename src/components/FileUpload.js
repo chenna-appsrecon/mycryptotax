@@ -162,7 +162,6 @@ function FileUpload() {
     onClose();
     navigate("/transactions");
   };
-  console.log("setValue", value);
   return (
     <div style={{ textAlign: "center" }}>
       <Container maxW="container.sm" bg="white" p={"20px"}>

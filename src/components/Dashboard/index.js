@@ -183,6 +183,7 @@ const Dashboard = () => {
       (previousValue, currentValue) => previousValue + currentValue,
       0
     );
+    // console.log(platform, data);
     setPortfolioValue(sumWithInitial);
     setRefreshing(false);
     // symbolDetails[item.securityName.toLowerCase()].id

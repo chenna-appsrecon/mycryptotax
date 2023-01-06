@@ -53,6 +53,7 @@ const LinkItems = [
   },
 
   { name: "Add Sources", icon: FiCompass, path: "/fileUpload" },
+  // { name: "Alerts List", icon: FiCompass, path: "/alerts" },
   { name: "Wallets", icon: FiStar, path: "/connectwallet" },
   // { name: "Documents", icon: FiSettings, path: "/dashboard" },
 ];

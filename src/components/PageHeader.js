@@ -62,7 +62,7 @@ export const PageHeader = ({ portfolioValue }) => {
                   `${
                     portfolioValue
                       ? parseFloat(portfolioValue).toFixed(2)
-                      : "Calculating..."
+                      : "N/A"
                   }`}
               </b>
             </span>
